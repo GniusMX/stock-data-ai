@@ -64,7 +64,6 @@ def calculate_adx_atr(df, period=14):
     low = df["Low"]
     close = df["Close"]
 
-    # True Range
     tr1 = high - low
     tr2 = (high - close.shift()).abs()
     tr3 = (low - close.shift()).abs()
@@ -74,7 +73,6 @@ def calculate_adx_atr(df, period=14):
         axis=1
     ).max(axis=1)
 
-    # Directional Movement
     up_move = high.diff()
     down_move = -low.diff()
 
@@ -100,7 +98,6 @@ def calculate_adx_atr(df, period=14):
         index=df.index
     )
 
-    # Wilder smoothing
     atr = tr.ewm(
         alpha=1 / period,
         min_periods=period,
@@ -143,7 +140,7 @@ def calculate_adx_atr(df, period=14):
 
 
 # ==============================
-# 株価データ取得
+# データ取得
 # ==============================
 stock_tickers = {
     "SMH": "SMH",
@@ -157,7 +154,7 @@ volatility_tickers = {
 
 
 # ==============================
-# SMH / QQQ
+# テクニカルデータ保存
 # ==============================
 for name, ticker in stock_tickers.items():
 
@@ -170,24 +167,22 @@ for name, ticker in stock_tickers.items():
         auto_adjust=False
     )
 
-    # yfinanceの列がMultiIndexの場合に対応
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
-    # SMA
     df["SMA50"] = df["Close"].rolling(50).mean()
     df["SMA100"] = df["Close"].rolling(100).mean()
     df["SMA150"] = df["Close"].rolling(150).mean()
     df["SMA200"] = df["Close"].rolling(200).mean()
 
-    # RSI
-    df["RSI14"] = calculate_rsi(df["Close"], 14)
+    df["RSI14"] = calculate_rsi(
+        df["Close"],
+        14
+    )
 
-    # MACD
     df["MACD"], df["MACD_Signal"], df["MACD_Hist"] = \
         calculate_macd(df["Close"])
 
-    # ADX / ATR
     df["ADX14"], df["ATR14"] = \
         calculate_adx_atr(df, 14)
 
@@ -226,6 +221,156 @@ for name, ticker in volatility_tickers.items():
     print(f"{filename} を保存しました。")
 
 
-print("================================")
-print("すべてのデータ処理が完了しました。")
-print("================================")
+# ============================================================
+# AI分析用 ALLtec.txt を作成
+# ============================================================
+
+print("AI分析用 ALLtec.txt を作成しています...")
+
+output = []
+
+output.append("=" * 70)
+output.append("AI TECHNICAL MARKET DATA")
+output.append("=" * 70)
+output.append("")
+output.append("Generated automatically by GitHub Actions")
+output.append("Data source: Yahoo Finance via yfinance")
+output.append("Historical period: latest 60 trading days")
+output.append("")
+
+
+# ==============================
+# SMH / QQQ
+# ==============================
+for name in ["SMH", "QQQ"]:
+
+    filename = f"{name}_technical.csv"
+
+    df = pd.read_csv(
+        filename,
+        skiprows=[1]
+    )
+
+    # Date列を確認
+    date_column = df.columns[0]
+
+    df = df.tail(60)
+
+    output.append("")
+    output.append("=" * 70)
+    output.append(name)
+    output.append("=" * 70)
+    output.append("")
+
+    output.append(
+        "Date,Close,SMA50,SMA100,SMA150,SMA200,"
+        "RSI14,MACD,MACD_Signal,MACD_Hist,ADX14,ATR14"
+    )
+
+    for _, row in df.iterrows():
+
+        values = []
+
+        date_value = row.iloc[0]
+
+        values.append(str(date_value))
+
+        columns = [
+            "Close",
+            "SMA50",
+            "SMA100",
+            "SMA150",
+            "SMA200",
+            "RSI14",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Hist",
+            "ADX14",
+            "ATR14"
+        ]
+
+        for column in columns:
+
+            try:
+                value = float(row[column])
+
+                if np.isnan(value):
+                    values.append("")
+                else:
+                    values.append(f"{value:.6f}")
+
+            except:
+                values.append("")
+
+        output.append(",".join(values))
+
+
+# ==============================
+# VIX / VIX3M
+# ==============================
+for name in ["VIX", "VIX3M"]:
+
+    filename = f"{name}_technical.csv"
+
+    df = pd.read_csv(
+        filename,
+        skiprows=[1]
+    )
+
+    df = df.tail(60)
+
+    output.append("")
+    output.append("=" * 70)
+    output.append(name)
+    output.append("=" * 70)
+    output.append("")
+
+    output.append(
+        "Date,Close,SMA20,SMA50,SMA200"
+    )
+
+    for _, row in df.iterrows():
+
+        values = []
+
+        date_value = row.iloc[0]
+
+        values.append(str(date_value))
+
+        columns = [
+            "Close",
+            "SMA20",
+            "SMA50",
+            "SMA200"
+        ]
+
+        for column in columns:
+
+            try:
+                value = float(row[column])
+
+                if np.isnan(value):
+                    values.append("")
+                else:
+                    values.append(f"{value:.6f}")
+
+            except:
+                values.append("")
+
+        output.append(",".join(values))
+
+
+# ==============================
+# ファイル保存
+# ==============================
+with open(
+    "ALLtec.txt",
+    "w",
+    encoding="utf-8"
+) as f:
+
+    f.write("\n".join(output))
+
+
+print("ALLtec.txt を作成しました。")
+print("すべての処理が完了しました。")
