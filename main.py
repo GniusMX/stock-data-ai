@@ -3,10 +3,27 @@ import pandas as pd
 import numpy as np
 
 
-# ==============================
+# ============================================================
+# 設定
+# ============================================================
+
+START_DATE = "1995-01-01"
+ALLTEC_DAYS = 60
+
+TICKERS = {
+    "SMH": "SMH",
+    "QQQ": "QQQ",
+    "VIX": "^VIX",
+    "VIX3M": "^VIX3M"
+}
+
+
+# ============================================================
 # RSI
-# ==============================
+# ============================================================
+
 def calculate_rsi(close, period=14):
+
     delta = close.diff()
 
     gain = delta.clip(lower=0)
@@ -29,10 +46,12 @@ def calculate_rsi(close, period=14):
     return 100 - (100 / (1 + rs))
 
 
-# ==============================
+# ============================================================
 # MACD
-# ==============================
+# ============================================================
+
 def calculate_macd(close):
+
     ema12 = close.ewm(
         span=12,
         adjust=False
@@ -55,9 +74,10 @@ def calculate_macd(close):
     return macd, signal, histogram
 
 
-# ==============================
+# ============================================================
 # ADX / ATR
-# ==============================
+# ============================================================
+
 def calculate_adx_atr(df, period=14):
 
     high = df["High"]
@@ -105,8 +125,8 @@ def calculate_adx_atr(df, period=14):
     ).mean()
 
     plus_di = (
-        100 *
-        plus_dm.ewm(
+        100
+        * plus_dm.ewm(
             alpha=1 / period,
             min_periods=period,
             adjust=False
@@ -115,8 +135,8 @@ def calculate_adx_atr(df, period=14):
     )
 
     minus_di = (
-        100 *
-        minus_dm.ewm(
+        100
+        * minus_dm.ewm(
             alpha=1 / period,
             min_periods=period,
             adjust=False
@@ -124,10 +144,12 @@ def calculate_adx_atr(df, period=14):
         / atr
     )
 
+    denominator = plus_di + minus_di
+
     dx = (
-        100 *
-        (plus_di - minus_di).abs()
-        / (plus_di + minus_di)
+        100
+        * (plus_di - minus_di).abs()
+        / denominator.replace(0, np.nan)
     )
 
     adx = dx.ewm(
@@ -139,238 +161,243 @@ def calculate_adx_atr(df, period=14):
     return adx, atr
 
 
-# ==============================
+# ============================================================
 # データ取得
-# ==============================
-stock_tickers = {
-    "SMH": "SMH",
-    "QQQ": "QQQ"
-}
+# ============================================================
 
-volatility_tickers = {
-    "VIX": "^VIX",
-    "VIX3M": "^VIX3M"
-}
+all_data = {}
 
+for name, ticker in TICKERS.items():
 
-# ==============================
-# テクニカルデータ保存
-# ==============================
-for name, ticker in stock_tickers.items():
-
-    print(f"{name} のデータを取得中...")
+    print("")
+    print("=" * 60)
+    print(f"{name} ({ticker}) のデータを取得中...")
+    print("=" * 60)
 
     df = yf.download(
         ticker,
-        period="2y",
+        start=START_DATE,
         interval="1d",
-        auto_adjust=False
+        auto_adjust=False,
+        actions=False,
+        progress=False
     )
 
+    if df.empty:
+        raise RuntimeError(
+            f"{name} のデータを取得できませんでした。"
+        )
+
+    # yfinanceがMultiIndexを返す場合に対応
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
+    # 念のため列名を文字列化
+    df.columns = [str(col) for col in df.columns]
+
+    # 日付順に並べる
+    df = df.sort_index()
+
+    # --------------------------------------------------------
+    # ヒストリカルデータを完全保存
+    # --------------------------------------------------------
+
+    historical_filename = f"{name}_historical.csv"
+
+    df.to_csv(
+        historical_filename,
+        index=True
+    )
+
+    print(
+        f"{historical_filename} 保存完了"
+    )
+
+    print(
+        f"期間: {df.index.min().date()} "
+        f"～ {df.index.max().date()}"
+    )
+
+    print(
+        f"件数: {len(df)}"
+    )
+
+    # --------------------------------------------------------
+    # テクニカル指標を追加
+    # 元データの列は削除しない
+    # --------------------------------------------------------
+
+    # SMA
     df["SMA50"] = df["Close"].rolling(50).mean()
     df["SMA100"] = df["Close"].rolling(100).mean()
     df["SMA150"] = df["Close"].rolling(150).mean()
     df["SMA200"] = df["Close"].rolling(200).mean()
 
+    # VIX / VIX3M用の短期SMA
+    if name in ["VIX", "VIX3M"]:
+        df["SMA20"] = df["Close"].rolling(20).mean()
+
+    # RSI
     df["RSI14"] = calculate_rsi(
         df["Close"],
         14
     )
 
-    df["MACD"], df["MACD_Signal"], df["MACD_Hist"] = \
-        calculate_macd(df["Close"])
-
-    df["ADX14"], df["ATR14"] = \
-        calculate_adx_atr(df, 14)
-
-    filename = f"{name}_technical.csv"
-
-    df.to_csv(filename)
-
-    print(f"{filename} を保存しました。")
-
-
-# ==============================
-# VIX / VIX3M
-# ==============================
-for name, ticker in volatility_tickers.items():
-
-    print(f"{name} のデータを取得中...")
-
-    df = yf.download(
-        ticker,
-        period="2y",
-        interval="1d",
-        auto_adjust=False
+    # MACD
+    (
+        df["MACD"],
+        df["MACD_Signal"],
+        df["MACD_Hist"]
+    ) = calculate_macd(
+        df["Close"]
     )
 
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
+    # ADX / ATR
+    df["ADX14"], df["ATR14"] = calculate_adx_atr(
+        df,
+        14
+    )
 
-    df["SMA20"] = df["Close"].rolling(20).mean()
-    df["SMA50"] = df["Close"].rolling(50).mean()
-    df["SMA200"] = df["Close"].rolling(200).mean()
+    # --------------------------------------------------------
+    # テクニカルCSV保存
+    # 元データ＋テクニカル指標
+    # --------------------------------------------------------
 
-    filename = f"{name}_technical.csv"
+    technical_filename = f"{name}_technical.csv"
 
-    df.to_csv(filename)
+    df.to_csv(
+        technical_filename,
+        index=True
+    )
 
-    print(f"{filename} を保存しました。")
+    print(
+        f"{technical_filename} 保存完了"
+    )
+
+    all_data[name] = df
 
 
 # ============================================================
-# AI分析用 ALLtec.txt を作成
+# ALLtec.txt作成
 # ============================================================
 
-print("AI分析用 ALLtec.txt を作成しています...")
+print("")
+print("=" * 60)
+print("ALLtec.txt を作成しています...")
+print("=" * 60)
 
 output = []
 
-output.append("=" * 70)
+output.append("=" * 80)
 output.append("AI TECHNICAL MARKET DATA")
-output.append("=" * 70)
+output.append("=" * 80)
 output.append("")
-output.append("Generated automatically by GitHub Actions")
-output.append("Data source: Yahoo Finance via yfinance")
-output.append("Historical period: latest 60 trading days")
+output.append(
+    "Historical data source: Yahoo Finance via yfinance"
+)
+output.append(
+    f"Historical data start request: {START_DATE}"
+)
+output.append(
+    f"AI analysis data: latest {ALLTEC_DAYS} trading days"
+)
+output.append(
+    "Historical and technical columns are preserved."
+)
 output.append("")
 
 
-# ==============================
-# SMH / QQQ
-# ==============================
-for name in ["SMH", "QQQ"]:
+# ============================================================
+# 各銘柄について直近60営業日を出力
+# ============================================================
 
-    filename = f"{name}_technical.csv"
+for name in TICKERS.keys():
 
-    df = pd.read_csv(
-        filename,
-        skiprows=[1]
-    )
-
-    # Date列を確認
-    date_column = df.columns[0]
-
-    df = df.tail(60)
+    df = all_data[name].tail(ALLTEC_DAYS).copy()
 
     output.append("")
-    output.append("=" * 70)
+    output.append("=" * 80)
     output.append(name)
-    output.append("=" * 70)
+    output.append("=" * 80)
     output.append("")
 
+    # --------------------------------------------------------
+    # 列名
+    # --------------------------------------------------------
+
+    columns = list(df.columns)
+
+    # Dateを先頭にする
     output.append(
-        "Date,Close,SMA50,SMA100,SMA150,SMA200,"
-        "RSI14,MACD,MACD_Signal,MACD_Hist,ADX14,ATR14"
+        "Date," + ",".join(columns)
     )
 
-    for _, row in df.iterrows():
+    # --------------------------------------------------------
+    # データ
+    # --------------------------------------------------------
+
+    for date, row in df.iterrows():
 
         values = []
 
-        date_value = row.iloc[0]
+        # 日付
+        values.append(
+            date.strftime("%Y-%m-%d")
+        )
 
-        values.append(str(date_value))
-
-        columns = [
-            "Close",
-            "SMA50",
-            "SMA100",
-            "SMA150",
-            "SMA200",
-            "RSI14",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Hist",
-            "ADX14",
-            "ATR14"
-        ]
-
+        # 全列をそのまま出力
         for column in columns:
 
-            try:
-                value = float(row[column])
+            value = row[column]
 
-                if np.isnan(value):
-                    values.append("")
-                else:
-                    values.append(f"{value:.6f}")
-
-            except:
+            if pd.isna(value):
                 values.append("")
+            else:
+                try:
+                    values.append(
+                        f"{float(value):.6f}"
+                    )
+                except:
+                    values.append(
+                        str(value)
+                    )
 
-        output.append(",".join(values))
-
-
-# ==============================
-# VIX / VIX3M
-# ==============================
-for name in ["VIX", "VIX3M"]:
-
-    filename = f"{name}_technical.csv"
-
-    df = pd.read_csv(
-        filename,
-        skiprows=[1]
-    )
-
-    df = df.tail(60)
-
-    output.append("")
-    output.append("=" * 70)
-    output.append(name)
-    output.append("=" * 70)
-    output.append("")
-
-    output.append(
-        "Date,Close,SMA20,SMA50,SMA200"
-    )
-
-    for _, row in df.iterrows():
-
-        values = []
-
-        date_value = row.iloc[0]
-
-        values.append(str(date_value))
-
-        columns = [
-            "Close",
-            "SMA20",
-            "SMA50",
-            "SMA200"
-        ]
-
-        for column in columns:
-
-            try:
-                value = float(row[column])
-
-                if np.isnan(value):
-                    values.append("")
-                else:
-                    values.append(f"{value:.6f}")
-
-            except:
-                values.append("")
-
-        output.append(",".join(values))
+        output.append(
+            ",".join(values)
+        )
 
 
-# ==============================
-# ファイル保存
-# ==============================
+# ============================================================
+# ALLtec.txt保存
+# ============================================================
+
 with open(
     "ALLtec.txt",
     "w",
     encoding="utf-8"
 ) as f:
 
-    f.write("\n".join(output))
+    f.write(
+        "\n".join(output)
+    )
 
 
-print("ALLtec.txt を作成しました。")
+print("")
+print("=" * 60)
+print("ALLtec.txt 保存完了")
+print("=" * 60)
+
+print("")
+print("処理対象:")
+print("SMH")
+print("QQQ")
+print("VIX")
+print("VIX3M")
+
+print("")
+print(
+    f"ALLtec.txt: 直近{ALLTEC_DAYS}営業日"
+)
+
+print("")
 print("すべての処理が完了しました。")
