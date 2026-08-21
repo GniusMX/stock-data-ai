@@ -28,15 +28,15 @@ jobs:
         run: python main.py
 
       - name: Save CSV to GitHub
-        run: 
-             git add SMH_historical.csv
-             git add QQQ_historical.csv
-             git add VIX_historical.csv
-             git add VIX3M_historical.csv
-             git add SMH_technical.csv
-             git add QQQ_technical.csv
-             git add VIX_technical.csv
-             git add VIX3M_technical.csv
-             git diff --cached --quiet || git commit -m "Update stock and volatility data"
-             git pull --rebase origin main
-             git push origin main
+        run: |
+               git config user.name "github-actions"
+               git config user.email "github-actions@github.com"
+
+               git add *.csv
+
+               git diff --cached --quiet || git commit -m "Update stock and volatility data"
+
+               git pull --rebase origin main
+
+               git push origin main
+
