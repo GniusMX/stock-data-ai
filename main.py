@@ -8,7 +8,9 @@ import numpy as np
 # ============================================================
 
 START_DATE = "1995-01-01"
+VIX3M_START_DATE = "2007-12-04"
 ALLTEC_DAYS = 60
+
 
 TICKERS = {
     "SMH": "SMH",
@@ -162,47 +164,86 @@ def calculate_adx_atr(df, period=14):
 
 
 # ============================================================
-# データ取得
+# Yahoo Financeからデータ取得
 # ============================================================
 
 all_data = {}
 
+
 for name, ticker in TICKERS.items():
 
     print("")
-    print("=" * 60)
+    print("=" * 70)
     print(f"{name} ({ticker}) のデータを取得中...")
-    print("=" * 60)
+    print("=" * 70)
 
-    df = yf.download(
-        ticker,
-        start=START_DATE,
-        interval="1d",
-        auto_adjust=False,
-        actions=False,
-        progress=False
-    )
+    # --------------------------------------------------------
+    # VIX3MだけTicker.history()を使用
+    # --------------------------------------------------------
+
+    if name == "VIX3M":
+
+        ticker_object = yf.Ticker(ticker)
+
+        df = ticker_object.history(
+            start=VIX3M_START_DATE,
+            end=None,
+            interval="1d",
+            auto_adjust=False,
+            actions=False
+        )
+
+    # --------------------------------------------------------
+    # SMH / QQQ / VIX
+    # --------------------------------------------------------
+
+    else:
+
+        df = yf.download(
+            ticker,
+            start=START_DATE,
+            interval="1d",
+            auto_adjust=False,
+            actions=False,
+            progress=False
+        )
+
+    # --------------------------------------------------------
+    # データが空の場合
+    # --------------------------------------------------------
 
     if df.empty:
+
         raise RuntimeError(
             f"{name} のデータを取得できませんでした。"
         )
 
-    # yfinanceがMultiIndexを返す場合に対応
+    # --------------------------------------------------------
+    # MultiIndex対応
+    # --------------------------------------------------------
+
     if isinstance(df.columns, pd.MultiIndex):
+
         df.columns = df.columns.get_level_values(0)
 
-    # 念のため列名を文字列化
-    df.columns = [str(col) for col in df.columns]
+    df.columns = [
+        str(column)
+        for column in df.columns
+    ]
 
-    # 日付順に並べる
+    # --------------------------------------------------------
+    # 日付順
+    # --------------------------------------------------------
+
     df = df.sort_index()
 
     # --------------------------------------------------------
-    # ヒストリカルデータを完全保存
+    # ヒストリカルデータ完全保存
     # --------------------------------------------------------
 
-    historical_filename = f"{name}_historical.csv"
+    historical_filename = (
+        f"{name}_historical.csv"
+    )
 
     df.to_csv(
         historical_filename,
@@ -214,8 +255,11 @@ for name, ticker in TICKERS.items():
     )
 
     print(
-        f"期間: {df.index.min().date()} "
-        f"～ {df.index.max().date()}"
+        f"最古: {df.index.min()}"
+    )
+
+    print(
+        f"最新: {df.index.max()}"
     )
 
     print(
@@ -223,19 +267,16 @@ for name, ticker in TICKERS.items():
     )
 
     # --------------------------------------------------------
-    # テクニカル指標を追加
-    # 元データの列は削除しない
+    # テクニカル指標
+    # 元データは削除しない
     # --------------------------------------------------------
 
     # SMA
+    df["SMA20"] = df["Close"].rolling(20).mean()
     df["SMA50"] = df["Close"].rolling(50).mean()
     df["SMA100"] = df["Close"].rolling(100).mean()
     df["SMA150"] = df["Close"].rolling(150).mean()
     df["SMA200"] = df["Close"].rolling(200).mean()
-
-    # VIX / VIX3M用の短期SMA
-    if name in ["VIX", "VIX3M"]:
-        df["SMA20"] = df["Close"].rolling(20).mean()
 
     # RSI
     df["RSI14"] = calculate_rsi(
@@ -259,11 +300,12 @@ for name, ticker in TICKERS.items():
     )
 
     # --------------------------------------------------------
-    # テクニカルCSV保存
-    # 元データ＋テクニカル指標
+    # テクニカルCSV
     # --------------------------------------------------------
 
-    technical_filename = f"{name}_technical.csv"
+    technical_filename = (
+        f"{name}_technical.csv"
+    )
 
     df.to_csv(
         technical_filename,
@@ -278,28 +320,30 @@ for name, ticker in TICKERS.items():
 
 
 # ============================================================
-# ALLtec.txt作成
+# ALLtec.txt
 # ============================================================
 
 print("")
-print("=" * 60)
-print("ALLtec.txt を作成しています...")
-print("=" * 60)
+print("=" * 70)
+print("ALLtec.txtを作成しています...")
+print("=" * 70)
+
 
 output = []
+
 
 output.append("=" * 80)
 output.append("AI TECHNICAL MARKET DATA")
 output.append("=" * 80)
 output.append("")
 output.append(
-    "Historical data source: Yahoo Finance via yfinance"
+    "Source: Yahoo Finance via yfinance"
 )
 output.append(
-    f"Historical data start request: {START_DATE}"
+    "Historical data: available data from requested start date"
 )
 output.append(
-    f"AI analysis data: latest {ALLTEC_DAYS} trading days"
+    f"AI analysis period: latest {ALLTEC_DAYS} trading days"
 )
 output.append(
     "Historical and technical columns are preserved."
@@ -308,12 +352,14 @@ output.append("")
 
 
 # ============================================================
-# 各銘柄について直近60営業日を出力
+# 各データの直近60営業日
 # ============================================================
 
 for name in TICKERS.keys():
 
-    df = all_data[name].tail(ALLTEC_DAYS).copy()
+    df = all_data[name].tail(
+        ALLTEC_DAYS
+    ).copy()
 
     output.append("")
     output.append("=" * 80)
@@ -322,42 +368,55 @@ for name in TICKERS.keys():
     output.append("")
 
     # --------------------------------------------------------
-    # 列名
+    # Date + 全列
     # --------------------------------------------------------
 
     columns = list(df.columns)
 
-    # Dateを先頭にする
     output.append(
         "Date," + ",".join(columns)
     )
 
     # --------------------------------------------------------
-    # データ
+    # 全データ出力
     # --------------------------------------------------------
 
     for date, row in df.iterrows():
 
         values = []
 
-        # 日付
-        values.append(
-            date.strftime("%Y-%m-%d")
-        )
+        # Date
+        if hasattr(date, "strftime"):
 
-        # 全列をそのまま出力
+            values.append(
+                date.strftime("%Y-%m-%d")
+            )
+
+        else:
+
+            values.append(
+                str(date)
+            )
+
+        # その他すべての列
         for column in columns:
 
             value = row[column]
 
             if pd.isna(value):
+
                 values.append("")
+
             else:
+
                 try:
+
                     values.append(
                         f"{float(value):.6f}"
                     )
+
                 except:
+
                     values.append(
                         str(value)
                     )
@@ -383,21 +442,15 @@ with open(
 
 
 print("")
-print("=" * 60)
+print("=" * 70)
 print("ALLtec.txt 保存完了")
-print("=" * 60)
-
-print("")
-print("処理対象:")
-print("SMH")
-print("QQQ")
-print("VIX")
-print("VIX3M")
+print("=" * 70)
 
 print("")
 print(
-    f"ALLtec.txt: 直近{ALLTEC_DAYS}営業日"
+    f"直近{ALLTEC_DAYS}営業日を収録"
 )
 
 print("")
+print("SMH / QQQ / VIX / VIX3M")
 print("すべての処理が完了しました。")
