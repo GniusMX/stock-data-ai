@@ -30,18 +30,19 @@ jobs:
       - name: Download stock and volatility data
         run: python main.py
 
-      - name: Save CSV to GitHub
+      - name: Save data to GitHub
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
           git add *.csv
+          git add ALLtec.txt
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
 
-          git commit -m "Update stock and volatility data"
+          git commit -m "Update stock and technical data"
 
-          git push --force-with-lease origin HEAD:main
+          git push
