@@ -35,5 +35,9 @@ jobs:
           git add QQQ_historical.csv
           git add VIX_historical.csv
           git add VIX3M_historical.csv
+          git add SMH_technical.csv
+          git add QQQ_technical.csv
+          git add VIX_technical.csv
+          git add VIX3M_technical.csv
           git diff --cached --quiet || git commit -m "Update stock and volatility data"
           git push
