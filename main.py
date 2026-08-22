@@ -11,15 +11,26 @@ START_DATE = "1995-01-01"
 VIX3M_START_DATE = "2007-12-04"
 ALLTEC_DAYS = 60
 
+# CBOE公式 VIX3M
 VIX3M_URL = (
     "https://cdn.cboe.com/api/global/us_indices/"
     "daily_prices/VIX3M_History.csv"
 )
 
-TICKERS = {
-    "SMH": "SMH",
-    "QQQ": "QQQ",
-    "VIX": "^VIX"
+# FRED
+FRED_DATA = {
+    "10Y_Treasury": {
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10",
+        "column": "DGS10"
+    },
+    "FedFunds": {
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=FEDFUNDS",
+        "column": "FEDFUNDS"
+    },
+    "CPI": {
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL",
+        "column": "CPIAUCSL"
+    }
 }
 
 
@@ -167,11 +178,23 @@ def calculate_adx_atr(df, period=14):
 
 
 # ============================================================
-# Yahoo Financeデータ取得
-# SMH / QQQ / VIX
+# データ格納
 # ============================================================
 
 all_data = {}
+
+
+# ============================================================
+# Yahoo Finance
+# SMH / QQQ / VIX
+# ============================================================
+
+TICKERS = {
+    "SMH": "SMH",
+    "QQQ": "QQQ",
+    "VIX": "^VIX"
+}
+
 
 for name, ticker in TICKERS.items():
 
@@ -194,6 +217,7 @@ for name, ticker in TICKERS.items():
             f"{name} のデータを取得できませんでした。"
         )
 
+    # MultiIndex対応
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
@@ -205,7 +229,8 @@ for name, ticker in TICKERS.items():
     df = df.sort_index()
 
     # --------------------------------------------------------
-    # ヒストリカルデータ完全保存
+    # ヒストリカルデータ
+    # 元データを削らず保存
     # --------------------------------------------------------
 
     historical_filename = (
@@ -234,7 +259,7 @@ for name, ticker in TICKERS.items():
     )
 
     # --------------------------------------------------------
-    # テクニカル指標追加
+    # テクニカル
     # --------------------------------------------------------
 
     df["SMA20"] = df["Close"].rolling(20).mean()
@@ -279,7 +304,7 @@ for name, ticker in TICKERS.items():
 
 # ============================================================
 # VIX3M
-# CBOE公式CSVから取得
+# CBOE公式データ
 # ============================================================
 
 print("")
@@ -291,10 +316,6 @@ vix3m = pd.read_csv(
     VIX3M_URL
 )
 
-# ------------------------------------------------------------
-# 列名確認
-# ------------------------------------------------------------
-
 vix3m.columns = [
     str(column).strip()
     for column in vix3m.columns
@@ -304,10 +325,6 @@ print(
     "VIX3M取得列:",
     list(vix3m.columns)
 )
-
-# ------------------------------------------------------------
-# 日付処理
-# ------------------------------------------------------------
 
 if "DATE" not in vix3m.columns:
 
@@ -331,19 +348,11 @@ vix3m = vix3m.set_index(
     "DATE"
 )
 
-# ------------------------------------------------------------
-# CBOEの列名を確認
-# ------------------------------------------------------------
-
 if "CLOSE" not in vix3m.columns:
 
     raise RuntimeError(
         "VIX3MデータにCLOSE列がありません。"
     )
-
-# ------------------------------------------------------------
-# 数値化
-# ------------------------------------------------------------
 
 for column in vix3m.columns:
 
@@ -352,15 +361,12 @@ for column in vix3m.columns:
         errors="coerce"
     )
 
+
 # ------------------------------------------------------------
-# ヒストリカルデータ完全保存
+# VIX3M ヒストリカル
 # ------------------------------------------------------------
 
-vix3m_historical = (
-    vix3m.copy()
-)
-
-vix3m_historical.to_csv(
+vix3m.to_csv(
     "VIX3M_historical.csv",
     index=True
 )
@@ -381,13 +387,12 @@ print(
     f"件数: {len(vix3m)}"
 )
 
+
 # ------------------------------------------------------------
-# テクニカル計算
+# VIX3M テクニカル
 # ------------------------------------------------------------
 
-vix3m_technical = (
-    vix3m.copy()
-)
+vix3m_technical = vix3m.copy()
 
 close = vix3m_technical["CLOSE"]
 
@@ -412,12 +417,27 @@ vix3m_technical["SMA200"] = (
 )
 
 vix3m_technical["RSI14"] = (
-    calculate_rsi(close, 14)
+    calculate_rsi(
+        close,
+        14
+    )
 )
 
-# VIX3MにはHigh / Lowがある場合のみADX / ATR
-if "HIGH" in vix3m_technical.columns and \
-   "LOW" in vix3m_technical.columns:
+(
+    vix3m_technical["MACD"],
+    vix3m_technical["MACD_Signal"],
+    vix3m_technical["MACD_Hist"]
+) = calculate_macd(
+    close
+)
+
+
+# High / Lowがある場合のみADX / ATR
+if (
+    "HIGH" in vix3m_technical.columns
+    and
+    "LOW" in vix3m_technical.columns
+):
 
     adx_df = pd.DataFrame(
         {
@@ -436,11 +456,6 @@ if "HIGH" in vix3m_technical.columns and \
         14
     )
 
-(
-    vix3m_technical["MACD"],
-    vix3m_technical["MACD_Signal"],
-    vix3m_technical["MACD_Hist"]
-) = calculate_macd(close)
 
 vix3m_technical.to_csv(
     "VIX3M_technical.csv",
@@ -455,13 +470,112 @@ all_data["VIX3M"] = vix3m_technical
 
 
 # ============================================================
-# ALLtec.txt作成
+# FRED マクロ経済データ
+# ============================================================
+
+print("")
+print("=" * 70)
+print("FREDマクロ経済データを取得します")
+print("=" * 70)
+
+
+for name, info in FRED_DATA.items():
+
+    print("")
+    print(
+        f"{name} をFREDから取得中..."
+    )
+
+    df = pd.read_csv(
+        info["url"]
+    )
+
+    # 日付
+    if "observation_date" not in df.columns:
+
+        raise RuntimeError(
+            f"{name} に observation_date 列がありません。"
+        )
+
+    df["observation_date"] = pd.to_datetime(
+        df["observation_date"]
+    )
+
+    # 必要列だけを残す
+    df = df[
+        [
+            "observation_date",
+            info["column"]
+        ]
+    ]
+
+    df = df.rename(
+        columns={
+            "observation_date": "Date",
+            info["column"]: "Value"
+        }
+    )
+
+    # 数値化
+    df["Value"] = pd.to_numeric(
+        df["Value"],
+        errors="coerce"
+    )
+
+    # 欠損削除
+    df = df.dropna(
+        subset=["Value"]
+    )
+
+    # 日付順
+    df = df.sort_values(
+        "Date"
+    )
+
+    df = df.set_index(
+        "Date"
+    )
+
+    # --------------------------------------------------------
+    # ヒストリカルデータ完全保存
+    # --------------------------------------------------------
+
+    historical_filename = (
+        f"{name}_historical.csv"
+    )
+
+    df.to_csv(
+        historical_filename
+    )
+
+    print(
+        f"{historical_filename} 保存完了"
+    )
+
+    print(
+        f"最古: {df.index.min()}"
+    )
+
+    print(
+        f"最新: {df.index.max()}"
+    )
+
+    print(
+        f"件数: {len(df)}"
+    )
+
+    all_data[name] = df
+
+
+# ============================================================
+# ALLtec.txt
 # ============================================================
 
 print("")
 print("=" * 70)
 print("ALLtec.txtを作成しています...")
 print("=" * 70)
+
 
 output = []
 
@@ -470,13 +584,13 @@ output.append("AI TECHNICAL MARKET DATA")
 output.append("=" * 80)
 output.append("")
 output.append(
-    "Source: Yahoo Finance + CBOE official VIX3M data"
+    "Source: Yahoo Finance + CBOE + FRED"
 )
 output.append(
     "Historical data: oldest available from requested start date"
 )
 output.append(
-    f"AI analysis period: latest {ALLTEC_DAYS} trading days"
+    f"AI analysis period: latest {ALLTEC_DAYS} observations"
 )
 output.append(
     "Historical and technical columns are preserved."
@@ -485,15 +599,21 @@ output.append("")
 
 
 # ============================================================
-# 直近60営業日
+# ALLtec.txtに入れるデータ
 # ============================================================
 
-for name in [
+ALLTEC_DATASETS = [
     "SMH",
     "QQQ",
     "VIX",
-    "VIX3M"
-]:
+    "VIX3M",
+    "10Y_Treasury",
+    "FedFunds",
+    "CPI"
+]
+
+
+for name in ALLTEC_DATASETS:
 
     df = all_data[name].tail(
         ALLTEC_DAYS
@@ -515,10 +635,12 @@ for name in [
 
         values = []
 
+        # Date
         values.append(
             date.strftime("%Y-%m-%d")
         )
 
+        # 全列
         for column in columns:
 
             value = row[column]
@@ -560,6 +682,7 @@ with open(
         "\n".join(output)
     )
 
+
 print("")
 print("=" * 70)
 print("ALLtec.txt 保存完了")
@@ -567,12 +690,16 @@ print("=" * 70)
 
 print("")
 print(
-    f"直近{ALLTEC_DAYS}営業日を収録"
+    f"各データの最新{ALLTEC_DAYS}観測値を収録"
 )
 
 print("")
 print(
     "SMH / QQQ / VIX / VIX3M"
+)
+
+print(
+    "10Y Treasury / FedFunds / CPI"
 )
 
 print("")
