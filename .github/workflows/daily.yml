@@ -17,7 +17,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -25,12 +24,14 @@ jobs:
           python-version: "3.12"
 
       - name: Install packages
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
 
-      - name: Download stock and volatility data
-        run: python main.py
+      - name: Download stock and macro data
+        run: |
+          python main.py
 
-      - name: Save data to GitHub
+      - name: Save CSV and ALLtec to GitHub
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
@@ -43,6 +44,8 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Update stock and technical data"
+          git commit -m "Update stock and macro data"
 
-          git push
+          git pull --rebase origin main
+
+          git push origin main
