@@ -23,6 +23,10 @@ FRED_DATA = {
         "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10",
         "column": "DGS10"
     },
+    "2Y_Treasury": {
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2",
+        "column": "DGS2"
+    },
     "FedFunds": {
         "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=FEDFUNDS",
         "column": "FEDFUNDS"
@@ -490,7 +494,6 @@ for name, info in FRED_DATA.items():
         info["url"]
     )
 
-    # 日付
     if "observation_date" not in df.columns:
 
         raise RuntimeError(
@@ -501,7 +504,6 @@ for name, info in FRED_DATA.items():
         df["observation_date"]
     )
 
-    # 必要列だけを残す
     df = df[
         [
             "observation_date",
@@ -516,18 +518,15 @@ for name, info in FRED_DATA.items():
         }
     )
 
-    # 数値化
     df["Value"] = pd.to_numeric(
         df["Value"],
         errors="coerce"
     )
 
-    # 欠損削除
     df = df.dropna(
         subset=["Value"]
     )
 
-    # 日付順
     df = df.sort_values(
         "Date"
     )
@@ -537,7 +536,8 @@ for name, info in FRED_DATA.items():
     )
 
     # --------------------------------------------------------
-    # ヒストリカルデータ完全保存
+    # ヒストリカルデータ
+    # 元データを削らず保存
     # --------------------------------------------------------
 
     historical_filename = (
@@ -569,6 +569,7 @@ for name, info in FRED_DATA.items():
 
 # ============================================================
 # ALLtec.txt
+# 最新60観測値を収録
 # ============================================================
 
 print("")
@@ -599,7 +600,7 @@ output.append("")
 
 
 # ============================================================
-# ALLtec.txtに入れるデータ
+# ALLtec対象データ
 # ============================================================
 
 ALLTEC_DATASETS = [
@@ -608,6 +609,7 @@ ALLTEC_DATASETS = [
     "VIX",
     "VIX3M",
     "10Y_Treasury",
+    "2Y_Treasury",
     "FedFunds",
     "CPI"
 ]
@@ -635,12 +637,10 @@ for name in ALLTEC_DATASETS:
 
         values = []
 
-        # Date
         values.append(
             date.strftime("%Y-%m-%d")
         )
 
-        # 全列
         for column in columns:
 
             value = row[column]
@@ -699,7 +699,7 @@ print(
 )
 
 print(
-    "10Y Treasury / FedFunds / CPI"
+    "10Y Treasury / 2Y Treasury / FedFunds / CPI"
 )
 
 print("")
