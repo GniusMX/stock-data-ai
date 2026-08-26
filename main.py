@@ -11,9 +11,6 @@ START_DATE = "1995-01-01"
 VIX3M_START_DATE = "2007-12-04"
 ALLTEC_DAYS = 60
 
-# 実行時タイムスタンプ（後続プロセスへの連携用）
-COLLECTED_AT = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
-
 # CBOE公式 VIX3M
 VIX3M_URL = (
     "https://cdn.cboe.com/api/global/us_indices/"
@@ -235,8 +232,8 @@ for name, ticker in TICKERS.items():
 
     df = df.sort_index()
     
-    # 実行タイムスタンプを追加
-    df["DataCollectedAt"] = COLLECTED_AT
+    # 【修正】データの最新日付を基準日時として追加
+    df["DataCollectedAt"] = df.index.max().strftime("%Y-%m-%d")
 
     # --------------------------------------------------------
     # ヒストリカルデータ
@@ -371,8 +368,8 @@ for column in vix3m.columns:
         errors="coerce"
     )
 
-# 実行タイムスタンプを追加
-vix3m["DataCollectedAt"] = COLLECTED_AT
+# 【修正】データの最新日付を基準日時として追加
+vix3m["DataCollectedAt"] = vix3m.index.max().strftime("%Y-%m-%d")
 
 # ------------------------------------------------------------
 # VIX3M ヒストリカル
@@ -543,8 +540,8 @@ for name, info in FRED_DATA.items():
         "Date"
     )
     
-    # 実行タイムスタンプを追加
-    df["DataCollectedAt"] = COLLECTED_AT
+    # 【修正】データの最新日付を基準日時として追加
+    df["DataCollectedAt"] = df.index.max().strftime("%Y-%m-%d")
 
     # --------------------------------------------------------
     # ヒストリカルデータ
