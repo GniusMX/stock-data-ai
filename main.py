@@ -190,13 +190,15 @@ all_data = {}
 
 # ============================================================
 # Yahoo Finance
-# SMH / QQQ / VIX
+# SMH / QQQ / VIX / GLD / TLT
 # ============================================================
 
 TICKERS = {
     "SMH": "SMH",
     "QQQ": "QQQ",
-    "VIX": "^VIX"
+    "VIX": "^VIX",
+    "GLD": "GLD",
+    "TLT": "TLT"
 }
 
 
@@ -232,7 +234,7 @@ for name, ticker in TICKERS.items():
 
     df = df.sort_index()
     
-    # 【修正】データの最新日付を基準日時として追加
+    # データの最新日付を基準日時として追加
     df["DataCollectedAt"] = df.index.max().strftime("%Y-%m-%d")
 
     # --------------------------------------------------------
@@ -368,7 +370,7 @@ for column in vix3m.columns:
         errors="coerce"
     )
 
-# 【修正】データの最新日付を基準日時として追加
+# データの最新日付を基準日時として追加
 vix3m["DataCollectedAt"] = vix3m.index.max().strftime("%Y-%m-%d")
 
 # ------------------------------------------------------------
@@ -540,7 +542,7 @@ for name, info in FRED_DATA.items():
         "Date"
     )
     
-    # 【修正】データの最新日付を基準日時として追加
+    # データの最新日付を基準日時として追加
     df["DataCollectedAt"] = df.index.max().strftime("%Y-%m-%d")
 
     # --------------------------------------------------------
@@ -615,6 +617,8 @@ ALLTEC_DATASETS = [
     "SMH",
     "QQQ",
     "VIX",
+    "GLD",
+    "TLT",
     "VIX3M",
     "10Y_Treasury",
     "2Y_Treasury",
@@ -703,7 +707,7 @@ print(
 
 print("")
 print(
-    "SMH / QQQ / VIX / VIX3M"
+    "SMH / QQQ / VIX / GLD / TLT / VIX3M"
 )
 
 print(
