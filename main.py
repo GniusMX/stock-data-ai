@@ -190,7 +190,7 @@ all_data = {}
 
 # ============================================================
 # Yahoo Finance
-# SMH / QQQ / VIX / GLD / TLT
+# 各種ETF・指数
 # ============================================================
 
 TICKERS = {
@@ -198,7 +198,22 @@ TICKERS = {
     "QQQ": "QQQ",
     "VIX": "^VIX",
     "GLD": "GLD",
-    "TLT": "TLT"
+    "TLT": "TLT",
+    "IEF": "IEF",
+    "TIP": "TIP",
+    "XLU": "XLU",
+    "XLP": "XLP",
+    "BIL": "BIL",
+    "SGOV": "SGOV",
+    "XLK": "XLK",
+    "XLE": "XLE",
+    "XLF": "XLF",
+    "XLV": "XLV",
+    "XLI": "XLI",
+    "XLB": "XLB",
+    "XLY": "XLY",
+    "XLRE": "XLRE",
+    "XLC": "XLC"
 }
 
 
@@ -219,9 +234,8 @@ for name, ticker in TICKERS.items():
     )
 
     if df.empty:
-        raise RuntimeError(
-            f"{name} のデータを取得できませんでした。"
-        )
+        print(f"警告: {name} のデータを取得できませんでした。スキップします。")
+        continue
 
     # MultiIndex対応
     if isinstance(df.columns, pd.MultiIndex):
@@ -619,6 +633,21 @@ ALLTEC_DATASETS = [
     "VIX",
     "GLD",
     "TLT",
+    "IEF",
+    "TIP",
+    "XLU",
+    "XLP",
+    "BIL",
+    "SGOV",
+    "XLK",
+    "XLE",
+    "XLF",
+    "XLV",
+    "XLI",
+    "XLB",
+    "XLY",
+    "XLRE",
+    "XLC",
     "VIX3M",
     "10Y_Treasury",
     "2Y_Treasury",
@@ -628,6 +657,9 @@ ALLTEC_DATASETS = [
 
 
 for name in ALLTEC_DATASETS:
+    
+    if name not in all_data:
+        continue
 
     df = all_data[name].tail(
         ALLTEC_DAYS
@@ -707,9 +739,19 @@ print(
 
 print("")
 print(
-    "SMH / QQQ / VIX / GLD / TLT / VIX3M"
+    "取得完了ETF・指数:"
+)
+print(
+    "SMH / QQQ / VIX / GLD / TLT / IEF / TIP / XLU / XLP / BIL / SGOV"
+)
+print(
+    "XLK / XLE / XLF / XLV / XLI / XLB / XLY / XLRE / XLC / VIX3M"
 )
 
+print("")
+print(
+    "取得完了マクロデータ:"
+)
 print(
     "10Y Treasury / 2Y Treasury / FedFunds / CPI"
 )
