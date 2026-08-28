@@ -3,7 +3,7 @@ name: Daily Stock Data
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 21 * * *"
+    - cron: "35 6 * * *"
 
 jobs:
   download:
