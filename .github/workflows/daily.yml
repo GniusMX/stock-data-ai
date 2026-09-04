@@ -1,49 +1,49 @@
-name: Daily Stock Data[span_3](start_span)[span_3](end_span)
+name: Daily Stock Data
 
 on:
-  workflow_dispatch:[span_4](start_span)[span_4](end_span)
+  workflow_dispatch:
 
 jobs:
-  download:[span_5](start_span)[span_5](end_span)
-    runs-on: ubuntu-latest[span_6](start_span)[span_6](end_span)
+  download:
+    runs-on: ubuntu-latest
 
-    permissions:[span_7](start_span)[span_7](end_span)
-      contents: write[span_8](start_span)[span_8](end_span)
+    permissions:
+      contents: write
 
-    steps:[span_9](start_span)[span_9](end_span)
-      - name: Checkout repository[span_10](start_span)[span_10](end_span)
-        uses: actions/checkout@v4[span_11](start_span)[span_11](end_span)
-        with:[span_12](start_span)[span_12](end_span)
-          fetch-depth: 0[span_13](start_span)[span_13](end_span)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up Python[span_14](start_span)[span_14](end_span)
-        uses: actions/setup-python@v5[span_15](start_span)[span_15](end_span)
-        with:[span_16](start_span)[span_16](end_span)
-          python-version: "3.12[span_17](start_span)"[span_17](end_span)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - name: Install packages[span_18](start_span)[span_18](end_span)
-        run: |[span_19](start_span)[span_19](end_span)
-          pip install -r requirements.txt[span_20](start_span)[span_20](end_span)
+      - name: Install packages
+        run: |
+          pip install -r requirements.txt
 
-      - name: Download stock and macro data[span_21](start_span)[span_21](end_span)
-        run: |[span_22](start_span)[span_22](end_span)
-          python main.py[span_23](start_span)[span_23](end_span)
+      - name: Download stock and macro data
+        run: |
+          python main.py
 
-      - name: Save CSV and ALLtec to GitHub[span_24](start_span)[span_24](end_span)
-        run: |[span_25](start_span)[span_25](end_span)
-          git config user.name "github-actions[span_26](start_span)"[span_26](end_span)
-          git config user.email "github-actions@github.com[span_27](start_span)"[span_27](end_span)
+      - name: Save CSV and ALLtec to GitHub
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-          git add *.csv[span_28](start_span)[span_28](end_span)
-          git add ALLtec.txt[span_29](start_span)[span_29](end_span)
+          git add *.csv
+          git add ALLtec.txt
 
-          if git diff --cached --quiet; then[span_30](start_span)[span_30](end_span)
-            echo "No changes to commit.[span_31](start_span)"[span_31](end_span)
-            exit 0[span_32](start_span)[span_32](end_span)
-          fi[span_33](start_span)[span_33](end_span)
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
 
-          git commit -m "Update stock and macro data[span_34](start_span)"[span_34](end_span)
+          git commit -m "Update stock and macro data"
 
-          git pull --rebase origin main[span_35](start_span)[span_35](end_span)
+          git pull --rebase origin main
 
-          git push origin main[span_36](start_span)[span_36](end_span)
+          git push origin main
