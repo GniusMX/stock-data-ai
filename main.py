@@ -592,6 +592,345 @@ for name, info in FRED_DATA.items():
 
 
 # ============================================================
+# ★追加データ（2026-09 追加）
+#
+#   既存の出力（*_historical.csv / *_technical.csv / VIX3M / FRED / ALLtec.txt）は
+#   一切変えない。ここで取得するのは検証用の新データのみで、
+#   ・取得に失敗しても警告を出して続行する（既存パイプラインを止めない）
+#   ・結果は EXTRA_DATA_STATUS.txt に一覧で残す
+# ============================================================
+
+import os
+
+EXTRA_STATUS = []
+
+
+def _extra_log(name, ok, detail):
+    mark = "OK " if ok else "NG "
+    EXTRA_STATUS.append(f"{mark} {name:24s} {detail}")
+    print(f"[追加データ] {mark} {name}: {detail}")
+
+
+def _download_yf(ticker):
+    """既存ループと同じ条件で yfinance から日足を取得して整形する。"""
+
+    df = yf.download(
+        ticker,
+        start=START_DATE,
+        interval="1d",
+        auto_adjust=False,
+        actions=False,
+        progress=False
+    )
+
+    if df is None or df.empty:
+        return None
+
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+
+    df.columns = [
+        str(column)
+        for column in df.columns
+    ]
+
+    df = df.sort_index()
+
+    return df
+
+
+def _save_with_stamp(df, filename):
+    df = df.copy()
+    df["DataCollectedAt"] = df.index.max().strftime("%Y-%m-%d")
+    df.to_csv(filename, index=True)
+    return df
+
+
+# ------------------------------------------------------------
+# (1) Yahoo Finance: ドル・商品・市場の幅・半導体指数
+# ------------------------------------------------------------
+
+EXTRA_TICKERS = {
+    "DXY": "DX-Y.NYB",        # ドル指数
+    "COPPER": "HG=F",         # 銅先物（銅/金比率用）
+    "GOLD_FUT": "GC=F",       # 金先物（銅/金比率用）
+    "SOX": "^SOX",            # フィラデルフィア半導体指数
+    "RSP": "RSP",             # S&P500 等ウェイト（市場の幅）
+    "SPY": "SPY",             # S&P500 時価総額加重（市場の幅）
+}
+
+print("")
+print("=" * 70)
+print("★追加データ: Yahoo Finance を取得中...")
+print("=" * 70)
+
+for name, ticker in EXTRA_TICKERS.items():
+
+    try:
+        df = _download_yf(ticker)
+
+        if df is None:
+            _extra_log(name, False, f"{ticker} のデータが空")
+            continue
+
+        df = _save_with_stamp(df, f"{name}_historical.csv")
+
+        _extra_log(
+            name, True,
+            f"{df.index.min().date()}〜{df.index.max().date()} {len(df)}件"
+        )
+
+    except Exception as e:
+        _extra_log(name, False, f"{ticker} 取得失敗: {e!r}")
+
+
+# ------------------------------------------------------------
+# (2) 半導体の主要構成銘柄と「幅（breadth）」
+#   ※現在の構成銘柄で過去を見るため生存者バイアスがある点に注意
+# ------------------------------------------------------------
+
+SEMI_CONSTITUENTS = [
+    "NVDA", "TSM", "AVGO", "ASML", "AMD", "QCOM", "TXN", "INTC",
+    "MU", "AMAT", "LRCX", "KLAC", "ADI", "MRVL", "NXPI", "MCHP",
+    "ON", "CDNS", "SNPS", "MPWR",
+]
+
+SEMI_DIR = "semi_constituents"
+
+print("")
+print("=" * 70)
+print("★追加データ: 半導体の構成銘柄を取得中...")
+print("=" * 70)
+
+semi_close = {}
+
+try:
+    os.makedirs(SEMI_DIR, exist_ok=True)
+except Exception as e:
+    _extra_log("SEMI_DIR", False, f"フォルダ作成失敗: {e!r}")
+
+for symbol in SEMI_CONSTITUENTS:
+
+    try:
+        df = _download_yf(symbol)
+
+        if df is None or "Close" not in df.columns:
+            _extra_log(f"SEMI_{symbol}", False, "データが空")
+            continue
+
+        _save_with_stamp(df, os.path.join(SEMI_DIR, f"{symbol}_historical.csv"))
+
+        semi_close[symbol] = pd.to_numeric(df["Close"], errors="coerce")
+
+        _extra_log(
+            f"SEMI_{symbol}", True,
+            f"{df.index.min().date()}〜{df.index.max().date()} {len(df)}件"
+        )
+
+    except Exception as e:
+        _extra_log(f"SEMI_{symbol}", False, f"取得失敗: {e!r}")
+
+
+try:
+    if "SMH" not in all_data:
+        raise RuntimeError("SMH のデータが無いため幅を計算できません")
+
+    if len(semi_close) == 0:
+        raise RuntimeError("構成銘柄を1つも取得できませんでした")
+
+    # 取引日カレンダーは SMH に合わせる（前方補完はしない）
+    calendar = all_data["SMH"].index
+
+    closes = pd.DataFrame(semi_close).reindex(calendar)
+
+    sma50 = closes.rolling(50, min_periods=50).mean()
+    sma200 = closes.rolling(200, min_periods=200).mean()
+    ret1 = closes / closes.shift(1) - 1      # 前方補完なし（pandasのバージョンに依存しない書き方）
+
+    have50 = closes.notna() & sma50.notna()
+    have200 = closes.notna() & sma200.notna()
+    have1 = ret1.notna()
+
+    breadth = pd.DataFrame(index=calendar)
+    breadth.index.name = "Date"
+    breadth["N_Available"] = closes.notna().sum(axis=1)
+    breadth["N_For50"] = have50.sum(axis=1)
+    breadth["PctAbove50"] = (
+        ((closes > sma50) & have50).sum(axis=1)
+        / breadth["N_For50"].replace(0, np.nan) * 100
+    )
+    breadth["N_For200"] = have200.sum(axis=1)
+    breadth["PctAbove200"] = (
+        ((closes > sma200) & have200).sum(axis=1)
+        / breadth["N_For200"].replace(0, np.nan) * 100
+    )
+    breadth["PctUpDay"] = (
+        ((ret1 > 0) & have1).sum(axis=1)
+        / have1.sum(axis=1).replace(0, np.nan) * 100
+    )
+    breadth["MedianRet1Pct"] = ret1.median(axis=1) * 100
+
+    breadth = breadth[breadth["N_Available"] > 0]
+
+    breadth = _save_with_stamp(breadth, "SEMI_BREADTH_historical.csv")
+
+    _extra_log(
+        "SEMI_BREADTH", True,
+        f"{breadth.index.min().date()}〜{breadth.index.max().date()} "
+        f"{len(breadth)}件（銘柄数 {len(semi_close)}）"
+    )
+
+except Exception as e:
+    _extra_log("SEMI_BREADTH", False, f"計算失敗: {e!r}")
+
+
+# ------------------------------------------------------------
+# (3) CBOE公式データ: VVIX / SKEW / VIX9D
+#   ※VIX3Mと同じURL形式。列が「DATE,OPEN,HIGH,LOW,CLOSE」の形式と
+#     「DATE,<指数名>」の1列形式の両方に対応する
+# ------------------------------------------------------------
+
+CBOE_EXTRA = {
+    "VVIX": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VVIX_History.csv",
+    "SKEW": "https://cdn.cboe.com/api/global/us_indices/daily_prices/SKEW_History.csv",
+    "VIX9D": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX9D_History.csv",
+}
+
+print("")
+print("=" * 70)
+print("★追加データ: CBOE公式データを取得中...")
+print("=" * 70)
+
+for name, url in CBOE_EXTRA.items():
+
+    try:
+        df = pd.read_csv(url)
+
+        df.columns = [
+            str(column).strip().upper()
+            for column in df.columns
+        ]
+
+        print(f"{name} 取得列: {list(df.columns)}")
+
+        if "DATE" not in df.columns:
+            raise RuntimeError(f"DATE列がありません: {list(df.columns)}")
+
+        if "CLOSE" not in df.columns:
+            others = [c for c in df.columns if c != "DATE"]
+            if name.upper() in df.columns:
+                df = df.rename(columns={name.upper(): "CLOSE"})
+            elif len(others) == 1:
+                df = df.rename(columns={others[0]: "CLOSE"})
+            else:
+                raise RuntimeError(f"終値の列を特定できません: {list(df.columns)}")
+
+        df["DATE"] = pd.to_datetime(df["DATE"])
+
+        df = df.sort_values("DATE").set_index("DATE")
+
+        for column in df.columns:
+            df[column] = pd.to_numeric(df[column], errors="coerce")
+
+        df = df.dropna(subset=["CLOSE"])
+
+        if df.empty:
+            raise RuntimeError("有効な行がありません")
+
+        df = _save_with_stamp(df, f"{name}_historical.csv")
+
+        _extra_log(
+            name, True,
+            f"{df.index.min().date()}〜{df.index.max().date()} {len(df)}件"
+        )
+
+    except Exception as e:
+        _extra_log(name, False, f"取得失敗: {e!r}")
+
+
+# ------------------------------------------------------------
+# (4) FRED: 信用スプレッド・ドル・金融環境
+#   ※ICE BofA系（ハイイールドOAS等）は2026年4月から直近3年分のみの提供に
+#     なったため採用せず、ムーディーズ系（BAA10Y/AAA10Y）を使う
+#   ※NFCI は週次・公表に遅れがあるため、検証時は公表日基準で扱うこと
+# ------------------------------------------------------------
+
+FRED_EXTRA = {
+    "BAA10Y": {
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAA10Y",
+        "column": "BAA10Y"
+    },
+    "AAA10Y": {
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=AAA10Y",
+        "column": "AAA10Y"
+    },
+    "DollarBroad": {
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTWEXBGS",
+        "column": "DTWEXBGS"
+    },
+    "NFCI": {
+        "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NFCI",
+        "column": "NFCI"
+    },
+}
+
+print("")
+print("=" * 70)
+print("★追加データ: FREDを取得中...")
+print("=" * 70)
+
+for name, info in FRED_EXTRA.items():
+
+    try:
+        df = pd.read_csv(info["url"])
+
+        if "observation_date" not in df.columns:
+            raise RuntimeError(f"observation_date 列がありません: {list(df.columns)}")
+
+        if info["column"] not in df.columns:
+            raise RuntimeError(f"{info['column']} 列がありません: {list(df.columns)}")
+
+        df["observation_date"] = pd.to_datetime(df["observation_date"])
+
+        df = df[["observation_date", info["column"]]].rename(
+            columns={
+                "observation_date": "Date",
+                info["column"]: "Value"
+            }
+        )
+
+        df["Value"] = pd.to_numeric(df["Value"], errors="coerce")
+
+        df = df.dropna(subset=["Value"]).sort_values("Date").set_index("Date")
+
+        if df.empty:
+            raise RuntimeError("有効な行がありません")
+
+        df = _save_with_stamp(df, f"{name}_historical.csv")
+
+        _extra_log(
+            name, True,
+            f"{df.index.min().date()}〜{df.index.max().date()} {len(df)}件"
+        )
+
+    except Exception as e:
+        _extra_log(name, False, f"取得失敗: {e!r}")
+
+
+# ------------------------------------------------------------
+# 追加データの取得結果
+# ------------------------------------------------------------
+
+try:
+    with open("EXTRA_DATA_STATUS.txt", "w", encoding="utf-8") as f:
+        f.write("追加データの取得結果（OK=成功 / NG=失敗。NGでも既存データには影響なし）\n")
+        f.write("\n".join(EXTRA_STATUS))
+        f.write("\n")
+except Exception as e:
+    print(f"[追加データ] EXTRA_DATA_STATUS.txt の保存に失敗: {e!r}")
+
+
+# ============================================================
 # ALLtec.txt
 # 最新60観測値を収録
 # ============================================================
@@ -754,6 +1093,20 @@ print(
 )
 print(
     "10Y Treasury / 2Y Treasury / FedFunds / CPI"
+)
+
+print("")
+print(
+    "★追加データ（検証用、失敗しても既存データに影響なし）:"
+)
+print(
+    "DXY / COPPER / GOLD_FUT / SOX / RSP / SPY / 半導体構成銘柄20 / SEMI_BREADTH"
+)
+print(
+    "VVIX / SKEW / VIX9D / BAA10Y / AAA10Y / DollarBroad / NFCI"
+)
+print(
+    "取得結果の一覧: EXTRA_DATA_STATUS.txt"
 )
 
 print("")
