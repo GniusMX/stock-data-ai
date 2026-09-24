@@ -34,8 +34,11 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add *.csv
+          # 直下のCSVに加え、semi_constituents/ など下のフォルダのCSVも保存する
+          # （'*.csv' を引用符で囲むと、シェルではなくGitがフォルダの中まで一致させる）
+          git add -- '*.csv'
           git add ALLtec.txt
+          if [ -f EXTRA_DATA_STATUS.txt ]; then git add EXTRA_DATA_STATUS.txt; fi
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
