@@ -10,6 +10,10 @@ import numpy as np
 # ============================================================
 
 START_DATE = "1995-01-01"
+# 2026-10: ^SOX（フィラデルフィア半導体指数）だけは、Yahooにある最古の日（1994-05-04）から取る。
+#          1990年を指定しておけば、Yahooが持つ最も古い日から返ってくる（それより前の分は存在しない）。
+#          SOX以外の銘柄の開始日（START_DATE）は従来のまま。
+SOX_START_DATE = "1990-01-01"
 VIX3M_START_DATE = "2007-12-04"
 ALLTEC_DAYS = 60
 
@@ -625,12 +629,13 @@ def _extra_log(name, ok, detail):
     print(f"[追加データ] {mark} {name}: {detail}")
 
 
-def _download_yf(ticker):
-    """既存ループと同じ条件で yfinance から日足を取得して整形する。"""
+def _download_yf(ticker, start=None):
+    """既存ループと同じ条件で yfinance から日足を取得して整形する。
+    start を省略すると従来どおり START_DATE から取る（2026-10: 銘柄ごとに開始日を変えられるよう引数を追加）。"""
 
     df = yf.download(
         ticker,
-        start=START_DATE,
+        start=(start if start is not None else START_DATE),
         interval="1d",
         auto_adjust=False,
         actions=False,
@@ -684,10 +689,22 @@ print("=" * 70)
 print("★追加データ: Yahoo Finance を取得中...")
 print("=" * 70)
 
+# 銘柄ごとの開始日（ここに無い銘柄は START_DATE）
+EXTRA_START = {
+    "SOX": SOX_START_DATE,
+}
+
 for name, ticker in EXTRA_TICKERS.items():
 
     try:
-        df = _download_yf(ticker)
+        _start = EXTRA_START.get(name)
+
+        df = _download_yf(ticker, start=_start)
+
+        # 開始日を変えた銘柄は、Yahooが一時的に空を返したときに1回だけ取り直す
+        if df is None and _start is not None:
+            time.sleep(3)
+            df = _download_yf(ticker, start=_start)
 
         if df is None:
             _extra_log(name, False, f"{ticker} のデータが空")
@@ -695,10 +712,16 @@ for name, ticker in EXTRA_TICKERS.items():
 
         df = _save_with_stamp(df, f"{name}_historical.csv")
 
-        _extra_log(
-            name, True,
-            f"{df.index.min().date()}〜{df.index.max().date()} {len(df)}件"
-        )
+        _detail = f"{df.index.min().date()}〜{df.index.max().date()} {len(df)}件"
+
+        # SOX: 1994年分が入っているか（Yahooの最古は1994-05-04のはず）を一覧に残す
+        if name == "SOX":
+            if df.index.min() <= pd.Timestamp("1994-12-31"):
+                _detail += "（1994年分を含む）"
+            else:
+                _detail += "（※1994年分なし。Yahoo側の提供開始が想定より遅い可能性）"
+
+        _extra_log(name, True, _detail)
 
     except Exception as e:
         _extra_log(name, False, f"{ticker} 取得失敗: {e!r}")
