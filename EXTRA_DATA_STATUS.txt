@@ -30,7 +30,7 @@ OK  SEMI_ON                  2000-05-02〜2026-10-09 6650件
 OK  SEMI_CDNS                1995-01-03〜2026-10-09 7996件
 OK  SEMI_SNPS                1995-01-03〜2026-10-09 7996件
 OK  SEMI_MPWR                2004-11-19〜2026-10-09 5506件
-OK  SEMI_BREADTH             2000-06-05〜2026-10-09 6627件（銘柄数 20）
+OK  SEMI_BREADTH             2000-06-05〜2026-10-08 6626件（銘柄数 20）
 OK  VVIX                     2006-03-06〜2026-10-09 5122件
 OK  SKEW                     1990-01-02〜2026-10-08 9244件
 OK  VIX9D                    2011-01-04〜2026-10-09 3965件
@@ -68,19 +68,19 @@ OK  CAND_XSD                 XSD 2006-02-06〜2026-10-09 5202件
 OK  CAND_QQQM                QQQM 2020-10-13〜2026-10-09 1505件
 OK  INTRA_SMH_5m             SMH 今回4524本 / 累計4680本 2026-07-17〜2026-10-09
 OK  INTRA_SMH_preclose       60日分
-OK  INTRA_SMH_1h             SMH 今回5007本 / 累計5026本 2023-11-22〜2026-10-09
+OK  INTRA_SMH_1h             SMH 今回5016本 / 累計5026本 2023-11-22〜2026-10-09
 OK  INTRA_QQQ_5m             QQQ 今回4524本 / 累計4680本 2026-07-17〜2026-10-09
 OK  INTRA_QQQ_preclose       60日分
-OK  INTRA_QQQ_1h             QQQ 今回5007本 / 累計5026本 2023-11-22〜2026-10-09
+OK  INTRA_QQQ_1h             QQQ 今回5016本 / 累計5026本 2023-11-22〜2026-10-09
 OK  INTRA_TLT_5m             TLT 今回4524本 / 累計4680本 2026-07-17〜2026-10-09
 OK  INTRA_TLT_preclose       60日分
-OK  INTRA_TLT_1h             TLT 今回5007本 / 累計5026本 2023-11-22〜2026-10-09
+OK  INTRA_TLT_1h             TLT 今回5016本 / 累計5026本 2023-11-22〜2026-10-09
 OK  INTRA_IEF_5m             IEF 今回4524本 / 累計4680本 2026-07-17〜2026-10-09
 OK  INTRA_IEF_preclose       60日分
-OK  INTRA_IEF_1h             IEF 今回5007本 / 累計5026本 2023-11-22〜2026-10-09
+OK  INTRA_IEF_1h             IEF 今回4990本 / 累計5026本 2023-11-22〜2026-10-09
 OK  INTRA_VIX_5m             ^VIX 今回8992本 / 累計9304本 2026-07-20〜2026-10-09
 OK  INTRA_VIX_preclose       60日分
-OK  INTRA_VIX_1h             ^VIX 今回9829本 / 累計9876本 2024-01-04〜2026-10-09
+OK  INTRA_VIX_1h             ^VIX 今回9848本 / 累計9876本 2024-01-04〜2026-10-09
 OK  LIQ_FedAssets            WALCL（百万ドル） 2002-12-18〜2026-10-07 1243件
 OK  LIQ_TGA_Wed              WDTGAL（百万ドル） 2002-12-18〜2026-10-07 1243件
 OK  LIQ_ON_RRP               RRPONTSYD（十億ドル） 2003-02-07〜2026-10-09 3344件
@@ -105,11 +105,11 @@ OK  CBOE_PC_INDEX            2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_EQUITY           2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_ETP              2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_VIX              2006-02-24〜2019-10-04 3427件（静的CSV）
-OK  CBOE_PC_DAILY            今回143日 / 累計569日 2024-07-05〜2026-10-08
-OK  FINRA_SHORTVOL           今回113日 / 累計453日 2024-12-18〜2026-10-09（銘柄 28）
-OK  OPT_SMH                  2026-10-09 IV30=0.343 Skew90=0.040 PC_Vol=3.40 満期12本（累計2日）
-OK  OPT_QQQ                  2026-10-09 IV30=0.183 Skew90=0.074 PC_Vol=1.31 満期14本（累計2日）
+OK  CBOE_PC_DAILY            今回141日 / 累計710日 2023-12-11〜2026-10-08
+OK  FINRA_SHORTVOL           今回117日 / 累計570日 2024-07-03〜2026-10-09（銘柄 28）
+NG  OPT_SMH                  失敗: RuntimeError('対象の満期がありません')
+OK  OPT_QQQ                  2026-10-09 IVが取れず（満期1本・累計2日）
 OK  HOLD_SMH                 2026-10-10 原本を保存（新規）
 NG  HOLD_SOXX                保有銘柄ファイルを取得できず: RuntimeError('中身が想定と違います（ボット対策の画面などの可能性）')
 NG  QQQ_MEMBERS_PIT          nasdaq-100-ticker-history が未導入（pip install nasdaq-100-ticker-history を追加すると有効）
-OK  GH_EXTRA_TIME            所要 249秒（上限 1500秒）
+OK  GH_EXTRA_TIME            所要 157秒（上限 1500秒）
