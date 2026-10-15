@@ -1371,7 +1371,9 @@ def _ext_summary(dfx):
     Close1555 = 通常時間の最後の足（15:55開始）の終値 ≒ 終値。
     AH_xxxx = D のアフターで、その時刻までに付いた最後の足の終値。PM_xxxx = 翌営業日のプレで、その時刻までに付いた最後の足の終値。
     Open930_next = 翌営業日の最初の足の始値。Ret_*_bp は Close1555 に対する騰落（bp）。
-    Vol_* は出来高、AH_N1700 は引け後1時間に出来高のあった足の本数、*_RangePct は足の高低差/終値（%）の中央値（スプレッドの目安）。"""
+    Vol_* は出来高、AH_N1700 は引け後1時間に値動きのあった足（高値>安値、または終値≠始値）の本数、*_RangePct は値動きのあった足の高低差/終値（%）の中央値（スプレッドの目安）。
+    ★2026-10-15 修正: Yahoo は時間外の5分足の出来高を返さない（全て0）ため、「出来高>0の足だけ使う」と時間外の列が空になる。
+      値動きの有無で判断し、値動きのない足は直前の約定価格のまま（足の終値）として扱う。Vol_* は常に0になる（Yahooの制約）。"""
 
     d = dfx[["Open", "High", "Low", "Close", "Volume"]].apply(pd.to_numeric, errors="coerce")
     d = d.tz_convert(INTRADAY_TZ).sort_index()
@@ -1389,12 +1391,15 @@ def _ext_summary(dfx):
 
     def last_px(g, lo, hi):
         s = seg(g, lo, hi)
-        s = s[s["Volume"] > 0]
+        s = s[s["Close"] > 0]
         return float(s["Close"].iloc[-1]) if len(s) else np.nan
+
+    def moved(s):
+        return (s["High"] > s["Low"]) | (s["Close"] != s["Open"])
 
     def med_range(g, lo, hi):
         s = seg(g, lo, hi)
-        s = s[(s["Volume"] > 0) & (s["Close"] > 0)]
+        s = s[moved(s) & (s["Close"] > 0)]
         return float(((s["High"] - s["Low"]) / s["Close"]).median() * 100) if len(s) else np.nan
 
     rows = []
@@ -1420,7 +1425,7 @@ def _ext_summary(dfx):
             "AH_1700": last_px(g, t(16, 0), t(17, 0)),
             "AH_1800": last_px(g, t(16, 0), t(18, 0)),
             "AH_2000": last_px(g, t(16, 0), t(20, 0)),
-            "AH_N1700": int((seg(g, t(16, 0), t(17, 0))["Volume"] > 0).sum()),
+            "AH_N1700": int(moved(seg(g, t(16, 0), t(17, 0))).sum()),
             "Vol_AH1700": float(seg(g, t(16, 0), t(17, 0))["Volume"].sum()),
             "Vol_AH2000": float(seg(g, t(16, 0), t(20, 0))["Volume"].sum()),
             "AH_RangePct1700": med_range(g, t(16, 0), t(17, 0)),
