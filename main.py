@@ -1186,8 +1186,8 @@ INTRADAY_SPECS = [
 ]
 
 
-def _download_intraday(ticker, interval, period):
-    """分足を取得し、索引をUTCに揃えて返す。"""
+def _download_intraday(ticker, interval, period, prepost=False):
+    """分足を取得し、索引をUTCに揃えて返す。prepost=True で時間外（プレ・アフター）の足も含める。"""
 
     df = yf.download(
         ticker,
@@ -1195,6 +1195,7 @@ def _download_intraday(ticker, interval, period):
         interval=interval,
         auto_adjust=False,
         actions=False,
+        prepost=prepost,
         progress=False
     )
 
@@ -1343,6 +1344,175 @@ if INTRADAY_ENABLED:
 
                 except Exception as e:
                     _extra_log(tag, False, f"{ticker} 取得失敗: {e!r}")
+
+
+# ------------------------------------------------------------
+# (7b) 時間外（プレマーケット・アフターマーケット）の5分足の蓄積（intraday/*_5m_ext.csv）★第43回で追加
+#   目的: SBI証券が米国株の時間外取引に対応したとき（2026年内に最長16時間へ拡大予定。日付は未発表）に、
+#         「引け後に確定判定を見て、時間外で修正売買する」運用が成り立つかを、実測で確かめるため。
+#   測るもの: ①引け後の価格が終値からどれだけ動くか（夜間ギャップのうち、引け後1時間・3時間で何割が起きるか）
+#             ②時間外の出来高と足の高低差（スプレッドの代わりの目安。板の気配値そのものは取れない）
+#   Yahooの5分足は直近約60日。取り逃すと戻らないので、毎回の取得分を既存ファイルに足す（8週間に1回は実行すること）。
+#   対象は SMH と QQQ だけ。*_ext_summary_historical.csv は日ごとの要約（毎回作り直す）。
+#   既存の出力・既存の分足ファイルは一切変えない。失敗しても警告を出して続行する。
+# ------------------------------------------------------------
+
+EXT_INTRADAY_ENABLED = True
+
+EXT_TICKERS = {
+    "SMH": "SMH",
+    "QQQ": "QQQ",
+}
+
+
+def _ext_summary(dfx):
+    """時間外込みの5分足から、日ごとの要約を作る。
+    行の日付 D の「夜」= D のアフター（16:00〜20:00）→ 翌営業日のプレ（4:00〜9:30）→ 翌営業日の寄付き。
+    Close1555 = 通常時間の最後の足（15:55開始）の終値 ≒ 終値。
+    AH_xxxx = D のアフターで、その時刻までに付いた最後の足の終値。PM_xxxx = 翌営業日のプレで、その時刻までに付いた最後の足の終値。
+    Open930_next = 翌営業日の最初の足の始値。Ret_*_bp は Close1555 に対する騰落（bp）。
+    Vol_* は出来高、AH_N1700 は引け後1時間に出来高のあった足の本数、*_RangePct は足の高低差/終値（%）の中央値（スプレッドの目安）。"""
+
+    d = dfx[["Open", "High", "Low", "Close", "Volume"]].apply(pd.to_numeric, errors="coerce")
+    d = d.tz_convert(INTRADAY_TZ).sort_index()
+    t = lambda hh, mm: _dt.time(hh, mm)
+
+    byday = {}
+    for day, g in d.groupby(d.index.date):
+        byday[day] = g.sort_index()
+
+    days = sorted(byday)
+
+    def seg(g, lo, hi):
+        tm = g.index.time
+        return g[(tm >= lo) & (tm < hi)]
+
+    def last_px(g, lo, hi):
+        s = seg(g, lo, hi)
+        s = s[s["Volume"] > 0]
+        return float(s["Close"].iloc[-1]) if len(s) else np.nan
+
+    def med_range(g, lo, hi):
+        s = seg(g, lo, hi)
+        s = s[(s["Volume"] > 0) & (s["Close"] > 0)]
+        return float(((s["High"] - s["Low"]) / s["Close"]).median() * 100) if len(s) else np.nan
+
+    rows = []
+
+    for i, day in enumerate(days):
+
+        g = byday[day]
+        rth = seg(g, t(9, 30), t(16, 0))
+
+        if len(rth) == 0:
+            continue
+
+        c = float(rth["Close"].iloc[-1])
+        nxt = byday[days[i + 1]] if i + 1 < len(days) else None
+        nrth = seg(nxt, t(9, 30), t(16, 0)) if nxt is not None else None
+
+        row = {
+            "Date": pd.Timestamp(day),
+            "LastRegularBar": rth.index[-1].strftime("%H:%M"),    # 15:55 以外なら半日取引か途中の日
+            "Close1555": c,
+            "AH_1605": last_px(g, t(16, 0), t(16, 5)),
+            "AH_1630": last_px(g, t(16, 0), t(16, 30)),
+            "AH_1700": last_px(g, t(16, 0), t(17, 0)),
+            "AH_1800": last_px(g, t(16, 0), t(18, 0)),
+            "AH_2000": last_px(g, t(16, 0), t(20, 0)),
+            "AH_N1700": int((seg(g, t(16, 0), t(17, 0))["Volume"] > 0).sum()),
+            "Vol_AH1700": float(seg(g, t(16, 0), t(17, 0))["Volume"].sum()),
+            "Vol_AH2000": float(seg(g, t(16, 0), t(20, 0))["Volume"].sum()),
+            "AH_RangePct1700": med_range(g, t(16, 0), t(17, 0)),
+            "RTH_RangePct1500": med_range(g, t(15, 0), t(16, 0)),
+            "Vol_RTH": float(rth["Volume"].sum()),
+            "PM_0800": np.nan, "PM_0900": np.nan, "PM_0925": np.nan,
+            "Vol_PMnext": np.nan, "PM_RangePct0900": np.nan, "Open930_next": np.nan, "NextDate": pd.NaT,
+        }
+
+        if nxt is not None and nrth is not None and len(nrth):
+            row["PM_0800"] = last_px(nxt, t(4, 0), t(8, 0))
+            row["PM_0900"] = last_px(nxt, t(4, 0), t(9, 0))
+            row["PM_0925"] = last_px(nxt, t(4, 0), t(9, 25))
+            row["Vol_PMnext"] = float(seg(nxt, t(4, 0), t(9, 30))["Volume"].sum())
+            row["PM_RangePct0900"] = med_range(nxt, t(8, 0), t(9, 0))
+            row["Open930_next"] = float(nrth["Open"].iloc[0])
+            row["NextDate"] = pd.Timestamp(days[i + 1])
+
+        for k in ("AH_1605", "AH_1630", "AH_1700", "AH_1800", "AH_2000", "PM_0800", "PM_0900", "PM_0925", "Open930_next"):
+            v = row[k]
+            row["Ret_" + k + "_bp"] = (v / c - 1.0) * 1e4 if (v == v and c > 0) else np.nan
+
+        rows.append(row)
+
+    return pd.DataFrame(rows).set_index("Date")
+
+
+if EXT_INTRADAY_ENABLED and INTRADAY_ENABLED:
+
+    print("")
+    print("=" * 70)
+    print("★追加データ: 時間外の5分足を取得して蓄積中...")
+    print("=" * 70)
+
+    try:
+        os.makedirs(INTRADAY_DIR, exist_ok=True)
+        _ext_ok = True
+    except Exception as e:
+        _ext_ok = False
+        _extra_log("INTRADAY_EXT_DIR", False, f"フォルダ作成失敗: {e!r}")
+
+    if _ext_ok:
+
+        for name, ticker in EXT_TICKERS.items():
+
+            tag = f"INTRA_{name}_5m_ext"
+            path = os.path.join(INTRADAY_DIR, f"{name}_5m_ext.csv")
+
+            try:
+                new = None
+
+                for attempt in range(2):
+                    try:
+                        new = _download_intraday(ticker, "5m", "58d", prepost=True)
+                    except Exception:
+                        new = None
+                        if attempt == 1:
+                            raise
+                    if new is not None:
+                        break
+                    time.sleep(3)
+
+                if new is None:
+                    _extra_log(tag, False, f"{ticker} の時間外込み5分足が空")
+                    continue
+
+                merged = _merge_intraday(path, new)
+
+                _tm = merged.tz_convert(INTRADAY_TZ).index.time
+                _n_ah = int(sum(1 for x in _tm if _dt.time(16, 0) <= x < _dt.time(20, 0)))
+                _n_pm = int(sum(1 for x in _tm if _dt.time(4, 0) <= x < _dt.time(9, 30)))
+
+                _extra_log(
+                    tag, True,
+                    f"{ticker} 今回{len(new)}本 / 累計{len(merged)}本（アフター{_n_ah}本・プレ{_n_pm}本） "
+                    f"{merged.index.min().strftime('%Y-%m-%d')}〜{merged.index.max().strftime('%Y-%m-%d')}"
+                )
+
+                if _n_ah == 0:
+                    _extra_log(tag + "_AH", False, f"{ticker} にアフターの足が1本も無い（prepost が効いていない可能性）")
+
+                summary = _ext_summary(merged)
+
+                _save_with_stamp(
+                    summary,
+                    os.path.join(INTRADAY_DIR, f"{name}_ext_summary_historical.csv")
+                )
+
+                _extra_log(f"INTRA_{name}_ext_summary", True, f"{len(summary)}日分")
+
+            except Exception as e:
+                _extra_log(tag, False, f"{ticker} 取得失敗: {e!r}")
 
 
 # ============================================================
