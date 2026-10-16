@@ -1155,6 +1155,17 @@ CANDIDATE_TICKERS = {
     "GOVZ": "GOVZ",
     "SPTL": "SPTL",
     "VGLT": "VGLT",
+    # 第51回: MAGS（Roundhill Magnificent Seven ETF）を検討に使う。
+    #   MAGS … 2023-04-11上場（当初は Roundhill BIG Tech ETF。2023-11-09に現名称へ変更）。Apple・Microsoft・Alphabet・Amazon・Meta・Nvidia・Teslaの等ウェイト（四半期ごとにリバランス）。
+    #          上場から約3.5年と短いため、構成7銘柄の日次データで上場前を再構成して使う（NVDAは取得済み）。
+    #          レバレッジ型ではない（一部にトータルリターンスワップを使う）。SBI米国株アプリで売買できるかは未確認。
+    "MAGS": "MAGS",
+    "AAPL": "AAPL",
+    "MSFT": "MSFT",
+    "GOOGL": "GOOGL",
+    "AMZN": "AMZN",
+    "META": "META",
+    "TSLA": "TSLA",
 }
 
 print("")
