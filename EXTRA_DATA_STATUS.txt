@@ -93,9 +93,9 @@ OK  INTRA_IEF_1h             IEF 今回5007本 / 累計5061本 2023-11-22〜2026
 OK  INTRA_VIX_5m             ^VIX 今回8992本 / 累計10084本 2026-07-20〜2026-10-16
 OK  INTRA_VIX_preclose       65日分
 OK  INTRA_VIX_1h             ^VIX 今回9829本 / 累計14806本 2023-12-28〜2026-10-16
-OK  INTRA_SMH_5m_ext         SMH 今回10738本 / 累計11123本（アフター2603本・プレ3840本） 2026-07-24〜2026-10-16
+OK  INTRA_SMH_5m_ext         SMH 今回10748本 / 累計11134本（アフター2614本・プレ3840本） 2026-07-24〜2026-10-16
 OK  INTRA_SMH_ext_summary    60日分
-OK  INTRA_QQQ_5m_ext         QQQ 今回10872本 / 累計11257本（アフター2616本・プレ3961本） 2026-07-24〜2026-10-16
+OK  INTRA_QQQ_5m_ext         QQQ 今回10889本 / 累計11274本（アフター2633本・プレ3961本） 2026-07-24〜2026-10-16
 OK  INTRA_QQQ_ext_summary    60日分
 OK  LIQ_FedAssets            WALCL（百万ドル） 2002-12-18〜2026-10-14 1244件
 OK  LIQ_TGA_Wed              WDTGAL（百万ドル） 2002-12-18〜2026-10-14 1244件
@@ -122,10 +122,10 @@ OK  CBOE_PC_EQUITY           2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_ETP              2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_VIX              2006-02-24〜2019-10-04 3427件（静的CSV）
 OK  CBOE_PC_DAILY            今回の新規なし（累計1767日、最新 2026-10-15。1日試して公表なし）
-OK  FINRA_SHORTVOL           今回1日 / 累計2064日 2018-08-01〜2026-10-16（銘柄 28）
+OK  FINRA_SHORTVOL           今回の新規なし（累計2064日、最新 2026-10-16。0日試して公表なし）
 OK  OPT_SMH                  2026-10-16 IV30=0.397 Skew90=0.049 PC_Vol=2.81 満期10本（累計7日）
 OK  OPT_QQQ                  2026-10-16 IV30=0.224 Skew90=0.096 PC_Vol=1.33 満期15本（累計7日）
 OK  HOLD_SMH                 2026-10-16 原本を保存（新規）
 NG  HOLD_SOXX                保有銘柄ファイルを取得できず: RuntimeError('中身が想定と違います（ボット対策の画面などの可能性）')
 NG  QQQ_MEMBERS_PIT          nasdaq-100-ticker-history が未導入（pip install nasdaq-100-ticker-history を追加すると有効）
-OK  GH_EXTRA_TIME            所要 12秒（上限 1500秒）
+OK  GH_EXTRA_TIME            所要 7秒（上限 1500秒）
