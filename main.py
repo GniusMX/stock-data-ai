@@ -1147,6 +1147,14 @@ CANDIDATE_TICKERS = {
     "SOXQ": "SOXQ",
     "XSD": "XSD",
     "QQQM": "QQQM",
+    # 第49回: 退避先TLTの代わりに持つ候補（TLTより金利感応度が高い／同程度の長期債ETF）。
+    #   EDV … バンガード超長期米国債ETF（デュレーション約25年。TLTの値動きの約1.4〜1.5倍）。SBI証券の取扱一覧に掲載あり
+    #   ZROZ/GOVZ … ゼロクーポン債（25年超）。SPTL/VGLT … TLTと同程度（比較用）
+    "EDV": "EDV",
+    "ZROZ": "ZROZ",
+    "GOVZ": "GOVZ",
+    "SPTL": "SPTL",
+    "VGLT": "VGLT",
 }
 
 print("")
