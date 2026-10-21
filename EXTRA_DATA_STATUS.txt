@@ -1,109 +1,109 @@
 追加データの取得結果（OK=成功 / NG=失敗。NGでも既存データには影響なし）
-OK  DXY                      1995-01-02〜2026-10-19 8071件
-OK  COPPER                   2000-08-30〜2026-10-19 6563件
-OK  GOLD_FUT                 2000-08-30〜2026-10-19 6559件
-OK  SOX                      1994-05-04〜2026-10-19 8170件（1994年分を含む）
-OK  RSP                      2003-05-01〜2026-10-19 5905件
-OK  SPY                      1995-01-03〜2026-10-19 8002件
-OK  MOVE                     2002-11-12〜2026-10-19 5918件
-OK  HYG                      2007-04-11〜2026-10-19 4913件
-OK  LQD                      2002-07-30〜2026-10-19 6095件
-OK  NQ_FUT                   2000-09-18〜2026-10-19 6586件
-OK  ES_FUT                   2000-09-18〜2026-10-19 6586件
-OK  SEMI_NVDA                1999-01-22〜2026-10-19 6978件
-OK  SEMI_TSM                 1997-10-09〜2026-10-19 7301件
-OK  SEMI_AVGO                2009-08-06〜2026-10-19 4327件
-OK  SEMI_ASML                1995-03-15〜2026-10-19 7952件
-OK  SEMI_AMD                 1995-01-03〜2026-10-19 8002件
-OK  SEMI_QCOM                1995-01-03〜2026-10-19 8002件
-OK  SEMI_TXN                 1995-01-03〜2026-10-19 8002件
-OK  SEMI_INTC                1995-01-03〜2026-10-19 8002件
-OK  SEMI_MU                  1995-01-03〜2026-10-19 8002件
-OK  SEMI_AMAT                1995-01-03〜2026-10-19 8002件
-OK  SEMI_LRCX                1995-01-03〜2026-10-19 8002件
-OK  SEMI_KLAC                1995-01-03〜2026-10-19 8002件
-OK  SEMI_ADI                 1995-01-03〜2026-10-19 8002件
-OK  SEMI_MRVL                2000-06-30〜2026-10-19 6614件
-OK  SEMI_NXPI                2010-08-06〜2026-10-19 4075件
-OK  SEMI_MCHP                1995-01-03〜2026-10-19 8002件
-OK  SEMI_ON                  2000-05-02〜2026-10-19 6656件
-OK  SEMI_CDNS                1995-01-03〜2026-10-19 8002件
-OK  SEMI_SNPS                1995-01-03〜2026-10-19 8002件
-OK  SEMI_MPWR                2004-11-19〜2026-10-19 5512件
-OK  SEMI_BREADTH             2000-06-05〜2026-10-16 6632件（銘柄数 20）
-OK  VVIX                     2006-03-06〜2026-10-19 5128件
-OK  SKEW                     1990-01-02〜2026-10-16 9250件
-OK  VIX9D                    2011-01-04〜2026-10-19 3971件
-OK  VXN                      2009-09-14〜2026-10-19 4303件
-OK  VIX6M                    2008-01-02〜2026-10-19 4729件
-OK  BAA10Y                   1986-01-02〜2026-10-16 10198件
-OK  AAA10Y                   1983-01-03〜2026-10-16 10945件
+OK  DXY                      1995-01-02〜2026-10-20 8072件
+OK  COPPER                   2000-08-30〜2026-10-20 6564件
+OK  GOLD_FUT                 2000-08-30〜2026-10-20 6560件
+OK  SOX                      1994-05-04〜2026-10-20 8171件（1994年分を含む）
+OK  RSP                      2003-05-01〜2026-10-20 5906件
+OK  SPY                      1995-01-03〜2026-10-20 8003件
+OK  MOVE                     2002-11-12〜2026-10-20 5919件
+OK  HYG                      2007-04-11〜2026-10-20 4914件
+OK  LQD                      2002-07-30〜2026-10-20 6096件
+OK  NQ_FUT                   2000-09-18〜2026-10-20 6587件
+OK  ES_FUT                   2000-09-18〜2026-10-20 6587件
+OK  SEMI_NVDA                1999-01-22〜2026-10-20 6979件
+OK  SEMI_TSM                 1997-10-09〜2026-10-20 7302件
+OK  SEMI_AVGO                2009-08-06〜2026-10-20 4328件
+OK  SEMI_ASML                1995-03-15〜2026-10-20 7953件
+OK  SEMI_AMD                 1995-01-03〜2026-10-20 8003件
+OK  SEMI_QCOM                1995-01-03〜2026-10-20 8003件
+OK  SEMI_TXN                 1995-01-03〜2026-10-20 8003件
+OK  SEMI_INTC                1995-01-03〜2026-10-20 8003件
+OK  SEMI_MU                  1995-01-03〜2026-10-20 8003件
+OK  SEMI_AMAT                1995-01-03〜2026-10-20 8003件
+OK  SEMI_LRCX                1995-01-03〜2026-10-20 8003件
+OK  SEMI_KLAC                1995-01-03〜2026-10-20 8003件
+OK  SEMI_ADI                 1995-01-03〜2026-10-20 8003件
+OK  SEMI_MRVL                2000-06-30〜2026-10-20 6615件
+OK  SEMI_NXPI                2010-08-06〜2026-10-20 4076件
+OK  SEMI_MCHP                1995-01-03〜2026-10-20 8003件
+OK  SEMI_ON                  2000-05-02〜2026-10-20 6657件
+OK  SEMI_CDNS                1995-01-03〜2026-10-20 8003件
+OK  SEMI_SNPS                1995-01-03〜2026-10-20 8003件
+OK  SEMI_MPWR                2004-11-19〜2026-10-20 5513件
+OK  SEMI_BREADTH             2000-06-05〜2026-10-19 6633件（銘柄数 20）
+OK  VVIX                     2006-03-06〜2026-10-20 5129件
+OK  SKEW                     1990-01-02〜2026-10-19 9251件
+OK  VIX9D                    2011-01-04〜2026-10-20 3972件
+OK  VXN                      2009-09-14〜2026-10-20 4304件
+OK  VIX6M                    2008-01-02〜2026-10-20 4730件
+OK  BAA10Y                   1986-01-02〜2026-10-19 10199件
+OK  AAA10Y                   1983-01-03〜2026-10-19 10946件
 OK  DollarBroad              2006-01-02〜2026-10-16 5212件
 OK  NFCI                     1971-01-08〜2026-10-09 2910件
-OK  Treasury3M               1981-09-01〜2026-10-16 11281件
-OK  T10Y3M                   1982-01-04〜2026-10-19 11201件
+OK  Treasury3M               1981-09-01〜2026-10-19 11282件
+OK  T10Y3M                   1982-01-04〜2026-10-20 11202件
 OK  STLFSI4                  1993-12-31〜2026-10-09 1711件
-OK  RealYield10Y             2003-01-02〜2026-10-16 5952件
+OK  RealYield10Y             2003-01-02〜2026-10-19 5953件
 OK  ASIA_8035_T              8035.T 2000-01-04〜2026-10-20 6684件
 OK  ASIA_6857_T              6857.T 2000-01-04〜2026-10-20 6684件
 OK  ASIA_6920_T              6920.T 2010-02-22〜2026-10-20 4094件
 OK  ASIA_6146_T              6146.T 2001-01-01〜2026-10-20 6425件
-OK  ASIA_2330_TW             2330.TW 2000-01-04〜2026-10-19 6660件
+OK  ASIA_2330_TW             2330.TW 2000-01-04〜2026-10-20 6661件
 OK  ASIA_000660_KS           000660.KS 2000-01-04〜2026-10-20 6696件
 OK  ASIA_005930_KS           005930.KS 2000-01-04〜2026-10-20 6696件
-OK  ASIA_N225                ^N225 1995-01-04〜2026-10-20 7795件
-OK  ASIA_TWII                ^TWII 1997-07-02〜2026-10-19 7179件
-OK  ASIA_KS11                ^KS11 1996-12-11〜2026-10-20 7346件
-OK  ASIA_ASML_AS             ASML.AS 1998-07-20〜2026-10-19 7270件
-OK  ASIA_IFX_DE              IFX.DE 2000-03-13〜2026-10-19 6798件
-OK  ASIA_SEMI_BASKET         2000-06-05〜2026-10-19 6622件（銘柄数 7）
-OK  CAND_BTAL                BTAL 2011-09-13〜2026-10-19 3797件
-OK  CAND_DBMF                DBMF 2019-05-08〜2026-10-19 1873件
-OK  CAND_KMLM                KMLM 2020-12-02〜2026-10-19 1476件
-OK  CAND_CTA                 CTA 2022-03-08〜2026-10-19 1159件
-OK  CAND_TAIL                TAIL 2017-04-06〜2026-10-19 2397件
-OK  CAND_SOXX                SOXX 2001-07-13〜2026-10-19 6354件
-OK  CAND_SOXQ                SOXQ 2021-06-11〜2026-10-19 1345件
-OK  CAND_XSD                 XSD 2006-02-06〜2026-10-19 5208件
-OK  CAND_QQQM                QQQM 2020-10-13〜2026-10-19 1511件
-OK  CAND_EDV                 EDV 2008-01-29〜2026-10-19 4711件
-OK  CAND_ZROZ                ZROZ 2009-11-04〜2026-10-19 4264件
-OK  CAND_GOVZ                GOVZ 2020-09-25〜2026-10-19 1523件
-OK  CAND_SPTL                SPTL 2007-05-30〜2026-10-19 4879件
-OK  CAND_VGLT                VGLT 2010-01-04〜2026-10-19 4224件
-OK  CAND_MAGS                MAGS 2023-04-11〜2026-10-19 885件
-OK  CAND_AAPL                AAPL 1995-01-03〜2026-10-19 8002件
-OK  CAND_MSFT                MSFT 1995-01-03〜2026-10-19 8002件
-OK  CAND_GOOGL               GOOGL 2004-08-19〜2026-10-19 5577件
-OK  CAND_AMZN                AMZN 1997-05-15〜2026-10-19 7403件
-OK  CAND_META                META 2012-05-18〜2026-10-19 3625件
-OK  CAND_TSLA                TSLA 2010-06-29〜2026-10-19 4102件
-OK  INTRA_SMH_5m             SMH 今回4524本 / 累計5148本 2026-07-17〜2026-10-19
-OK  INTRA_SMH_preclose       66日分
-OK  INTRA_SMH_1h             SMH 今回4986本 / 累計5068本 2023-11-22〜2026-10-19
-OK  INTRA_QQQ_5m             QQQ 今回4524本 / 累計5148本 2026-07-17〜2026-10-19
-OK  INTRA_QQQ_preclose       66日分
-OK  INTRA_QQQ_1h             QQQ 今回4988本 / 累計5068本 2023-11-22〜2026-10-19
-OK  INTRA_TLT_5m             TLT 今回4524本 / 累計5148本 2026-07-17〜2026-10-19
-OK  INTRA_TLT_preclose       66日分
-OK  INTRA_TLT_1h             TLT 今回4988本 / 累計5068本 2023-11-22〜2026-10-19
-OK  INTRA_IEF_5m             IEF 今回4524本 / 累計5148本 2026-07-17〜2026-10-19
-OK  INTRA_IEF_preclose       66日分
-OK  INTRA_IEF_1h             IEF 今回4990本 / 累計5068本 2023-11-22〜2026-10-19
-OK  INTRA_VIX_5m             ^VIX 今回8992本 / 累計10240本 2026-07-20〜2026-10-19
-OK  INTRA_VIX_preclose       66日分
-OK  INTRA_VIX_1h             ^VIX 今回9799本 / 累計14820本 2023-12-28〜2026-10-19
-OK  INTRA_SMH_5m_ext         SMH 今回10729本 / 累計11306本（アフター2647本・プレ3901本） 2026-07-24〜2026-10-19
-OK  INTRA_SMH_ext_summary    61日分
-OK  INTRA_QQQ_5m_ext         QQQ 今回10889本 / 累計11467本（アフター2682本・プレ4027本） 2026-07-24〜2026-10-19
-OK  INTRA_QQQ_ext_summary    61日分
+OK  ASIA_N225                ^N225 1995-01-04〜2026-10-19 7795件
+OK  ASIA_TWII                ^TWII 1997-07-02〜2026-10-20 7180件
+OK  ASIA_KS11                ^KS11 1996-12-11〜2026-10-19 7346件
+OK  ASIA_ASML_AS             ASML.AS 1998-07-20〜2026-10-20 7271件
+OK  ASIA_IFX_DE              IFX.DE 2000-03-13〜2026-10-20 6799件
+OK  ASIA_SEMI_BASKET         2000-06-05〜2026-10-20 6623件（銘柄数 7）
+OK  CAND_BTAL                BTAL 2011-09-13〜2026-10-20 3798件
+OK  CAND_DBMF                DBMF 2019-05-08〜2026-10-20 1874件
+OK  CAND_KMLM                KMLM 2020-12-02〜2026-10-20 1477件
+OK  CAND_CTA                 CTA 2022-03-08〜2026-10-20 1160件
+OK  CAND_TAIL                TAIL 2017-04-06〜2026-10-20 2398件
+OK  CAND_SOXX                SOXX 2001-07-13〜2026-10-20 6355件
+OK  CAND_SOXQ                SOXQ 2021-06-11〜2026-10-20 1346件
+OK  CAND_XSD                 XSD 2006-02-06〜2026-10-20 5209件
+OK  CAND_QQQM                QQQM 2020-10-13〜2026-10-20 1512件
+OK  CAND_EDV                 EDV 2008-01-29〜2026-10-20 4712件
+OK  CAND_ZROZ                ZROZ 2009-11-04〜2026-10-20 4265件
+OK  CAND_GOVZ                GOVZ 2020-09-25〜2026-10-20 1524件
+OK  CAND_SPTL                SPTL 2007-05-30〜2026-10-20 4880件
+OK  CAND_VGLT                VGLT 2010-01-04〜2026-10-20 4225件
+OK  CAND_MAGS                MAGS 2023-04-11〜2026-10-20 886件
+OK  CAND_AAPL                AAPL 1995-01-03〜2026-10-20 8003件
+OK  CAND_MSFT                MSFT 1995-01-03〜2026-10-20 8003件
+OK  CAND_GOOGL               GOOGL 2004-08-19〜2026-10-20 5578件
+OK  CAND_AMZN                AMZN 1997-05-15〜2026-10-20 7404件
+OK  CAND_META                META 2012-05-18〜2026-10-20 3626件
+OK  CAND_TSLA                TSLA 2010-06-29〜2026-10-20 4103件
+OK  INTRA_SMH_5m             SMH 今回4524本 / 累計5226本 2026-07-17〜2026-10-20
+OK  INTRA_SMH_preclose       67日分
+OK  INTRA_SMH_1h             SMH 今回4986本 / 累計5075本 2023-11-22〜2026-10-20
+OK  INTRA_QQQ_5m             QQQ 今回4524本 / 累計5226本 2026-07-17〜2026-10-20
+OK  INTRA_QQQ_preclose       67日分
+OK  INTRA_QQQ_1h             QQQ 今回4988本 / 累計5075本 2023-11-22〜2026-10-20
+OK  INTRA_TLT_5m             TLT 今回4524本 / 累計5226本 2026-07-17〜2026-10-20
+OK  INTRA_TLT_preclose       67日分
+OK  INTRA_TLT_1h             TLT 今回4988本 / 累計5075本 2023-11-22〜2026-10-20
+OK  INTRA_IEF_5m             IEF 今回4524本 / 累計5226本 2026-07-17〜2026-10-20
+OK  INTRA_IEF_preclose       67日分
+OK  INTRA_IEF_1h             IEF 今回4990本 / 累計5075本 2023-11-22〜2026-10-20
+OK  INTRA_VIX_5m             ^VIX 今回8992本 / 累計10396本 2026-07-20〜2026-10-20
+OK  INTRA_VIX_preclose       67日分
+OK  INTRA_VIX_1h             ^VIX 今回9799本 / 累計14834本 2023-12-28〜2026-10-20
+OK  INTRA_SMH_5m_ext         SMH 今回10712本 / 累計11481本（アフター2692本・プレ3953本） 2026-07-24〜2026-10-20
+OK  INTRA_SMH_ext_summary    62日分
+OK  INTRA_QQQ_5m_ext         QQQ 今回10889本 / 累計11659本（アフター2730本・プレ4093本） 2026-07-24〜2026-10-20
+OK  INTRA_QQQ_ext_summary    62日分
 OK  LIQ_FedAssets            WALCL（百万ドル） 2002-12-18〜2026-10-14 1244件
 OK  LIQ_TGA_Wed              WDTGAL（百万ドル） 2002-12-18〜2026-10-14 1244件
-OK  LIQ_ON_RRP               RRPONTSYD（十億ドル） 2003-02-07〜2026-10-19 3349件
-OK  LIQ_BreakEven10Y         T10YIE（%） 2003-01-02〜2026-10-19 5953件
-OK  LIQ_SOFR                 SOFR（%） 2018-04-03〜2026-10-16 2133件
+OK  LIQ_ON_RRP               RRPONTSYD（十億ドル） 2003-02-07〜2026-10-20 3350件
+OK  LIQ_BreakEven10Y         T10YIE（%） 2003-01-02〜2026-10-20 5954件
+OK  LIQ_SOFR                 SOFR（%） 2018-04-03〜2026-10-19 2134件
 OK  NET_LIQUIDITY            2002-12-18〜2026-10-14 721件（最新 5870十億ドル）
-OK  TGA_Daily                財務省DTS（百万ドル） 2005-10-03〜2026-10-16 5149件
+OK  TGA_Daily                財務省DTS（百万ドル） 2005-10-03〜2026-10-19 5150件
 OK  CFTC_ADJUSTED_INT_RATE_S_P_500_TOTL 2022-03-29〜2026-10-13 233行 [ADJUSTED INT RATE S&P 500 TOTL - CHICAGO MERCANTILE EXCHANGE]
 OK  CFTC_ES_CONS             2010-06-15〜2026-10-13 853行 [S&P 500 Consolidated - CHICAGO MERCANTILE EXCHANGE]
 OK  CFTC_ES_EMINI            2006-06-13〜2026-10-13 1062行 [E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE／E-MINI S&P 500 STOCK INDEX - CHICAGO MERCANTILE EXCHANGE]
@@ -121,11 +121,11 @@ OK  CBOE_PC_INDEX            2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_EQUITY           2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_ETP              2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_VIX              2006-02-24〜2019-10-04 3427件（静的CSV）
-OK  CBOE_PC_DAILY            今回の新規なし（累計1768日、最新 2026-10-16。2日試して公表なし）
-OK  FINRA_SHORTVOL           今回1日 / 累計2065日 2018-08-01〜2026-10-19（銘柄 28）
+OK  CBOE_PC_DAILY            今回1日 / 累計1769日 2019-10-07〜2026-10-19
+OK  FINRA_SHORTVOL           今回1日 / 累計2066日 2018-08-01〜2026-10-20（銘柄 28）
 NG  OPT_SMH                  失敗: RuntimeError('対象の満期がありません')
 NG  OPT_QQQ                  失敗: RuntimeError('対象の満期がありません')
-OK  HOLD_SMH                 2026-10-20 原本を保存（新規）
+OK  HOLD_SMH                 2026-10-21 原本を保存（新規）
 NG  HOLD_SOXX                保有銘柄ファイルを取得できず: RuntimeError('中身が想定と違います（ボット対策の画面などの可能性）')
 NG  QQQ_MEMBERS_PIT          nasdaq-100-ticker-history が未導入（pip install nasdaq-100-ticker-history を追加すると有効）
-OK  GH_EXTRA_TIME            所要 12秒（上限 1500秒）
+OK  GH_EXTRA_TIME            所要 14秒（上限 1500秒）
