@@ -32,7 +32,7 @@ OK  SEMI_SNPS                1995-01-03〜2026-10-23 8006件
 OK  SEMI_MPWR                2004-11-19〜2026-10-23 5516件
 OK  SEMI_BREADTH             2000-06-05〜2026-10-23 6637件（銘柄数 20）
 OK  VVIX                     2006-03-06〜2026-10-23 5132件
-OK  SKEW                     1990-01-02〜2026-10-22 9254件
+OK  SKEW                     1990-01-02〜2026-10-23 9255件
 OK  VIX9D                    2011-01-04〜2026-10-23 3975件
 OK  VXN                      2009-09-14〜2026-10-23 4307件
 OK  VIX6M                    2008-01-02〜2026-10-23 4733件
@@ -93,7 +93,7 @@ OK  INTRA_IEF_1h             IEF 今回5007本 / 累計5096本 2023-11-22〜2026
 OK  INTRA_VIX_5m             ^VIX 今回8992本 / 累計10864本 2026-07-20〜2026-10-23
 OK  INTRA_VIX_preclose       70日分
 OK  INTRA_VIX_1h             ^VIX 今回9834本 / 累計14876本 2023-12-28〜2026-10-23
-OK  INTRA_SMH_5m_ext         SMH 今回10666本 / 累計12015本（アフター2809本・プレ4136本） 2026-07-24〜2026-10-23
+OK  INTRA_SMH_5m_ext         SMH 今回10667本 / 累計12017本（アフター2811本・プレ4136本） 2026-07-24〜2026-10-23
 OK  INTRA_SMH_ext_summary    65日分
 OK  INTRA_QQQ_5m_ext         QQQ 今回10889本 / 累計12237本（アフター2875本・プレ4292本） 2026-07-24〜2026-10-23
 OK  INTRA_QQQ_ext_summary    65日分
@@ -121,11 +121,11 @@ OK  CBOE_PC_INDEX            2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_EQUITY           2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_ETP              2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_VIX              2006-02-24〜2019-10-04 3427件（静的CSV）
-OK  CBOE_PC_DAILY            今回の新規なし（累計1772日、最新 2026-10-22。1日試して公表なし）
+OK  CBOE_PC_DAILY            今回1日 / 累計1773日 2019-10-07〜2026-10-23
 OK  FINRA_SHORTVOL           今回の新規なし（累計2069日、最新 2026-10-23。0日試して公表なし）
-OK  OPT_SMH                  2026-10-23 IV30=0.426 Skew90=0.034 PC_Vol=2.86 満期8本（累計11日）
-OK  OPT_QQQ                  2026-10-23 IV30=0.246 Skew90=0.077 PC_Vol=1.17 満期12本（累計11日）
-OK  HOLD_SMH                 2026-10-23 原本を保存（新規）
+OK  OPT_SMH                  2026-10-23 IV30=0.433 Skew90=0.034 PC_Vol=2.86 満期8本（累計11日）
+OK  OPT_QQQ                  2026-10-23 IV30=0.250 Skew90=0.078 PC_Vol=1.17 満期12本（累計11日）
+OK  HOLD_SMH                 2026-10-24 原本を保存（新規）
 NG  HOLD_SOXX                保有銘柄ファイルを取得できず: RuntimeError('中身が想定と違います（ボット対策の画面などの可能性）')
 NG  QQQ_MEMBERS_PIT          nasdaq-100-ticker-history が未導入（pip install nasdaq-100-ticker-history を追加すると有効）
-OK  GH_EXTRA_TIME            所要 9秒（上限 1500秒）
+OK  GH_EXTRA_TIME            所要 8秒（上限 1500秒）
