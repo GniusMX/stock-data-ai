@@ -123,9 +123,9 @@ OK  CBOE_PC_ETP              2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_VIX              2006-02-24〜2019-10-04 3427件（静的CSV）
 OK  CBOE_PC_DAILY            今回の新規なし（累計1773日、最新 2026-10-23。0日試して公表なし）
 OK  FINRA_SHORTVOL           今回の新規なし（累計2069日、最新 2026-10-23。0日試して公表なし）
-OK  OPT_SMH                  2026-10-23 IV30=0.433 Skew90=0.034 PC_Vol=2.86 満期8本（累計11日）
-OK  OPT_QQQ                  2026-10-23 IV30=0.250 Skew90=0.078 PC_Vol=1.17 満期12本（累計11日）
-OK  HOLD_SMH                 2026-10-24 原本を保存（新規）
+OK  OPT_SMH                  2026-10-23 IV30=0.441 Skew90=0.035 PC_Vol=2.86 満期8本（累計11日）
+OK  OPT_QQQ                  2026-10-23 IV30=0.254 Skew90=0.079 PC_Vol=1.17 満期12本（累計11日）
+OK  HOLD_SMH                 2026-10-25 原本を保存（新規）
 NG  HOLD_SOXX                保有銘柄ファイルを取得できず: RuntimeError('中身が想定と違います（ボット対策の画面などの可能性）')
 NG  QQQ_MEMBERS_PIT          nasdaq-100-ticker-history が未導入（pip install nasdaq-100-ticker-history を追加すると有効）
 OK  GH_EXTRA_TIME            所要 8秒（上限 1500秒）
