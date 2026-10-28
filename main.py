@@ -344,6 +344,88 @@ for name, ticker in TICKERS.items():
 
 
 # ============================================================
+# VIX3M の場中の暫定行（2026-10、ルールエンジン v8.29 の C2 用）
+# ============================================================
+# CBOE の VIX3M は引け後に確定するので、場中（引けの数分前）に①を走らせると当日の行がない。
+# ルールエンジン v8.29 の C2（VIX の30上抜け × VIX ÷ VIX3M ≧ 1）は当日の VIX3M が必要なので、
+# 当日の VIX の行があり、CBOE の最新日がそれより前のときだけ、Yahoo の ^VIX3M（取れなければ ^VXV）の
+# 当日の足を『暫定の行』として足す。CBOE の値が出たら、次の実行で CBOE の値に置き換わる（毎回 CBOE の全履歴から作り直す）。
+# 取れなかったとき・値が不自然なときは足さない（②③は、その日の C2 を判定しない＝v8.28 と同じ判定）。
+# ※ Yahoo のシンボル（^VIX3M／^VXV）は未検証（この環境から Yahoo に接続できないため）。取れなければ何も足さないので安全側。
+
+VIX3M_YAHOO_SYMBOLS = ["^VIX3M", "^VXV"]
+
+
+def append_vix3m_provisional(vix3m, vix_df, symbols=None, download=None):
+    """CBOE の VIX3M（日付を索引にした DataFrame。列は OPEN/HIGH/LOW/CLOSE）に、場中の暫定行を足して返す。
+    足す条件: (1) vix_df（Yahoo の ^VIX の日足）の最新日が CBOE の最新日より後、(2) Yahoo の VIX3M の足がその間の日付にある、
+    (3) 値が 5〜150 で、同じ日の VIX との比が 0.5〜2 の範囲。足した日付・値を表示する。失敗しても例外は出さない（何も足さない）。"""
+    symbols = symbols or VIX3M_YAHOO_SYMBOLS
+    download = download or yf.download
+    try:
+        if vix_df is None or len(vix_df) == 0 or len(vix3m) == 0:
+            print("VIX3M暫定行: VIXの当日の行がないため、足しません。")
+            return vix3m
+        cboe_last = pd.Timestamp(vix3m.index.max()).normalize()
+        vix_last = pd.Timestamp(vix_df.index.max()).normalize()
+        if vix_last <= cboe_last:
+            print(f"VIX3M暫定行: CBOEの最新日（{cboe_last:%Y-%m-%d}）がVIXの最新日（{vix_last:%Y-%m-%d}）以降のため、足しません。")
+            return vix3m
+        for sym in symbols:
+            try:
+                d = None
+                for _attempt in range(2):
+                    d = download(sym, period="10d", interval="1d", auto_adjust=False, actions=False, progress=False)
+                    if d is not None and len(d) > 0:
+                        break
+                    time.sleep(2)
+                if d is None or len(d) == 0:
+                    print(f"VIX3M暫定行: {sym} を取得できませんでした。")
+                    continue
+                if isinstance(d.columns, pd.MultiIndex):
+                    d.columns = d.columns.get_level_values(0)
+                d.columns = [str(c) for c in d.columns]
+                d = d.sort_index()
+                d.index = pd.to_datetime(d.index).tz_localize(None).normalize() if getattr(d.index, "tz", None) is not None else pd.to_datetime(d.index).normalize()
+                if "Close" not in d.columns:
+                    print(f"VIX3M暫定行: {sym} に Close 列がありません。")
+                    continue
+                new = d[(d.index > cboe_last) & (d.index <= vix_last)].dropna(subset=["Close"])
+                rows = []
+                for dt, r in new.iterrows():
+                    c = float(r["Close"])
+                    vx = vix_df["Close"].reindex([dt]).iloc[0] if "Close" in vix_df.columns else float("nan")
+                    if not (5.0 <= c <= 150.0):
+                        print(f"VIX3M暫定行: {sym} {dt:%Y-%m-%d} の値 {c} が範囲外のため足しません。")
+                        continue
+                    if pd.notna(vx) and not (0.5 <= c / float(vx) <= 2.0):
+                        print(f"VIX3M暫定行: {sym} {dt:%Y-%m-%d} の値 {c:.2f} がVIX {float(vx):.2f} と離れすぎのため足しません。")
+                        continue
+                    rows.append((dt, {"OPEN": float(r.get("Open", c)), "HIGH": float(r.get("High", c)), "LOW": float(r.get("Low", c)), "CLOSE": c}))
+                if not rows:
+                    print(f"VIX3M暫定行: {sym} にCBOEの最新日（{cboe_last:%Y-%m-%d}）より後の使える足がありません。")
+                    continue
+                add = pd.DataFrame([v for _, v in rows], index=pd.DatetimeIndex([k for k, _ in rows], name=vix3m.index.name))
+                for col in vix3m.columns:
+                    if col not in add.columns:
+                        add[col] = float("nan")
+                out = pd.concat([vix3m, add[list(vix3m.columns)]]).sort_index()
+                out.index.name = vix3m.index.name
+                for dt, v in rows:
+                    print(f"VIX3M暫定行: {sym} の当日の足を足しました: {dt:%Y-%m-%d} 終値 {v['CLOSE']:.2f}（場中の暫定値。CBOEの確定値が出たら次の実行で置き換わります）")
+                return out
+            except Exception as e:
+                print(f"VIX3M暫定行: {sym} の処理に失敗しました（{e!r}）。")
+                continue
+        print("VIX3M暫定行: どのシンボルからも取得できなかったため、足しません（当日のC2は判定されません）。")
+        return vix3m
+    except Exception as e:
+        print(f"VIX3M暫定行: 処理に失敗しました（{e!r}）。足しません。")
+        return vix3m
+
+
+
+# ============================================================
 # VIX3M
 # CBOE公式データ
 # ============================================================
@@ -401,6 +483,12 @@ for column in vix3m.columns:
         vix3m[column],
         errors="coerce"
     )
+
+# 2026-10（v8.29）: 場中の暫定行（CBOEの当日の行がまだ無いとき、Yahooの^VIX3Mの当日の足を足す）
+vix3m = append_vix3m_provisional(
+    vix3m,
+    all_data["VIX"] if "VIX" in all_data else None
+)
 
 # データの最新日付を基準日時として追加
 vix3m["DataCollectedAt"] = vix3m.index.max().strftime("%Y-%m-%d")
