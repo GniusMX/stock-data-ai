@@ -2656,15 +2656,21 @@ IND_FRED = {
 IND_LOG_COLS = ["Series", "ObsDate", "Value", "SeenUTC", "Backfill"]
 
 
+def _fred_get_text(sid, timeout=30):
+    """FRED の CSV を取る。既存の FRED 取得（pandas の read_csv(URL)）と同じ通信の仕方（urllib の標準の名乗り）にする。
+    requests + ブラウザ風の名乗りだと、FRED が応答しない（第87回の実行で ReadTimeout）ことがあったため。再試行はしない。"""
+    import urllib.request
+    with urllib.request.urlopen(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}", timeout=timeout) as r:
+        return r.read().decode("utf-8-sig")
+
+
 def _fred_csv(sid):
     """FRED の1系列（fredgraph.csv）を Date 索引・Value 列で返す。"""
-    r = _http_get(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}", tries=1, timeout=15)   # 再試行しない・15秒で諦める
-    if r.status_code != 200:
-        raise RuntimeError(f"HTTP {r.status_code} {_snip(r.text)}")
-    df = pd.read_csv(io.StringIO(r.text))
+    text = _fred_get_text(sid)
+    df = pd.read_csv(io.StringIO(text))
     dc = "observation_date" if "observation_date" in df.columns else ("DATE" if "DATE" in df.columns else None)
     if dc is None or sid not in df.columns:
-        raise RuntimeError(f"列が想定と違います {list(df.columns)[:4]} {_snip(r.text, 80)}")
+        raise RuntimeError(f"列が想定と違います {list(df.columns)[:4]} {_snip(text, 80)}")
     df[dc] = pd.to_datetime(df[dc])
     df = df.rename(columns={dc: "Date", sid: "Value"})[["Date", "Value"]]
     df["Value"] = pd.to_numeric(df["Value"], errors="coerce")
