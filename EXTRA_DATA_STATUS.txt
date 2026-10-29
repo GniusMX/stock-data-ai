@@ -1,15 +1,15 @@
 追加データの取得結果（OK=成功 / NG=失敗。NGでも既存データには影響なし）
-OK  DXY                      1995-01-02〜2026-10-28 8078件
-OK  COPPER                   2000-08-30〜2026-10-28 6570件
-OK  GOLD_FUT                 2000-08-30〜2026-10-28 6566件
+OK  DXY                      1995-01-02〜2026-10-29 8079件
+OK  COPPER                   2000-08-30〜2026-10-29 6571件
+OK  GOLD_FUT                 2000-08-30〜2026-10-29 6567件
 OK  SOX                      1994-05-04〜2026-10-28 8177件（1994年分を含む）
 OK  RSP                      2003-05-01〜2026-10-28 5912件
 OK  SPY                      1995-01-03〜2026-10-28 8009件
 OK  MOVE                     2002-11-12〜2026-10-28 5925件
 OK  HYG                      2007-04-11〜2026-10-28 4920件
 OK  LQD                      2002-07-30〜2026-10-28 6102件
-OK  NQ_FUT                   2000-09-18〜2026-10-28 6593件
-OK  ES_FUT                   2000-09-18〜2026-10-28 6593件
+OK  NQ_FUT                   2000-09-18〜2026-10-29 6594件
+OK  ES_FUT                   2000-09-18〜2026-10-29 6594件
 OK  SEMI_NVDA                1999-01-22〜2026-10-28 6985件
 OK  SEMI_TSM                 1997-10-09〜2026-10-28 7308件
 OK  SEMI_AVGO                2009-08-06〜2026-10-28 4334件
@@ -121,11 +121,24 @@ OK  CBOE_PC_INDEX            2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_EQUITY           2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_ETP              2006-11-01〜2019-10-04 3253件（静的CSV）
 OK  CBOE_PC_VIX              2006-02-24〜2019-10-04 3427件（静的CSV）
-OK  CBOE_PC_DAILY            今回1日 / 累計1776日 2019-10-07〜2026-10-28
+OK  CBOE_PC_DAILY            今回の新規なし（累計1776日、最新 2026-10-28。1日試して公表なし）
 OK  FINRA_SHORTVOL           今回の新規なし（累計2072日、最新 2026-10-28。1日試して公表なし）
-OK  OPT_SMH                  2026-10-28 IV30=0.395 Skew90=0.048 PC_Vol=1.22 満期8本（累計14日）
-OK  OPT_QQQ                  2026-10-28 IV30=0.210 Skew90=0.080 PC_Vol=1.21 満期12本（累計14日）
+OK  OPT_SMH                  2026-10-28 IV30=0.063 Skew90=0.000 PC_Vol=1.22 満期8本（累計14日）
+OK  OPT_QQQ                  2026-10-28 IV30=0.063 Skew90=0.000 PC_Vol=1.21 満期12本（累計14日）
 OK  HOLD_SMH                 2026-10-29 原本を保存（新規）
 NG  HOLD_SOXX                保有銘柄ファイルを取得できず: RuntimeError('中身が想定と違います（ボット対策の画面などの可能性）')
 NG  QQQ_MEMBERS_PIT          nasdaq-100-ticker-history が未導入（pip install nasdaq-100-ticker-history を追加すると有効）
-OK  GH_EXTRA_TIME            所要 7秒（上限 1500秒）
+NG  IND_IPG3344S             鉱工業生産 半導体・電子部品 季調済 取得失敗: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+NG  IND_CAPUTLG3344S         設備稼働率 半導体・電子部品 季調済(%) 取得失敗: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+NG  IND_U34SVS               出荷額 コンピュータ・電子製品 原数値(百万ドル) 取得失敗: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+NG  IND_U34STI               在庫額 コンピュータ・電子製品 原数値(百万ドル) 取得失敗: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+NG  IND_U34SNO               新規受注 コンピュータ・電子製品 原数値(百万ドル) 取得失敗: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+NG  IND_U34SUO               受注残 コンピュータ・電子製品 原数値(百万ドル) 取得失敗: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+NG  IND_A34SNO               新規受注 コンピュータ・電子製品 季調済(百万ドル) 取得失敗: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+NG  IND_TIME                 時間切れのため残りは次回
+OK  TW_REVENUE               今回 28社（2026-09）／累計 204行、TSMC 2012-01〜2026-09 177か月
+NG  EST_SNAPSHOT             0/27銘柄から取得、変化のあった 0行を追加／NVDA以降は時間切れ
+NG  EST_EARN_DATES           0銘柄、累計 0行（決算日の表が取れませんでした）
+NG  EST_RATINGS              0銘柄、累計 0行（格付け履歴が取れませんでした）
+NG  FUND_STATEMENTS          0/35銘柄から取得、新規・訂正 0行を追加／NVDA以降は時間切れ
+OK  GH_EXTRA_TIME            所要 1317秒（上限 1500秒）
