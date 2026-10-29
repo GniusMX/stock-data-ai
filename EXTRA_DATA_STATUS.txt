@@ -80,20 +80,20 @@ OK  CAND_META                META 2012-05-18〜2026-10-28 3632件
 OK  CAND_TSLA                TSLA 2010-06-29〜2026-10-28 4109件
 OK  INTRA_SMH_5m             SMH 今回4524本 / 累計5694本 2026-07-17〜2026-10-28
 OK  INTRA_SMH_preclose       73日分
-OK  INTRA_SMH_1h             SMH 今回4986本 / 累計5117本 2023-11-22〜2026-10-28
+OK  INTRA_SMH_1h             SMH 今回5007本 / 累計5117本 2023-11-22〜2026-10-28
 OK  INTRA_QQQ_5m             QQQ 今回4524本 / 累計5694本 2026-07-17〜2026-10-28
 OK  INTRA_QQQ_preclose       73日分
-OK  INTRA_QQQ_1h             QQQ 今回4988本 / 累計5117本 2023-11-22〜2026-10-28
+OK  INTRA_QQQ_1h             QQQ 今回5007本 / 累計5117本 2023-11-22〜2026-10-28
 OK  INTRA_TLT_5m             TLT 今回4524本 / 累計5694本 2026-07-17〜2026-10-28
 OK  INTRA_TLT_preclose       73日分
-OK  INTRA_TLT_1h             TLT 今回4988本 / 累計5117本 2023-11-22〜2026-10-28
+OK  INTRA_TLT_1h             TLT 今回5007本 / 累計5117本 2023-11-22〜2026-10-28
 OK  INTRA_IEF_5m             IEF 今回4524本 / 累計5694本 2026-07-17〜2026-10-28
 OK  INTRA_IEF_preclose       73日分
-OK  INTRA_IEF_1h             IEF 今回4990本 / 累計5117本 2023-11-22〜2026-10-28
+OK  INTRA_IEF_1h             IEF 今回5007本 / 累計5117本 2023-11-22〜2026-10-28
 OK  INTRA_VIX_5m             ^VIX 今回8836本 / 累計11332本 2026-07-20〜2026-10-28
 OK  INTRA_VIX_preclose       73日分
-OK  INTRA_VIX_1h             ^VIX 今回9785本 / 累計14918本 2023-12-28〜2026-10-28
-OK  INTRA_SMH_5m_ext         SMH 今回10616本 / 累計12535本（アフター2930本・プレ4301本） 2026-07-24〜2026-10-28
+OK  INTRA_VIX_1h             ^VIX 今回9820本 / 累計14918本 2023-12-28〜2026-10-28
+OK  INTRA_SMH_5m_ext         SMH 今回10612本 / 累計12535本（アフター2930本・プレ4301本） 2026-07-24〜2026-10-28
 OK  INTRA_SMH_ext_summary    68日分
 OK  INTRA_QQQ_5m_ext         QQQ 今回10889本 / 累計12813本（アフター3019本・プレ4490本） 2026-07-24〜2026-10-28
 OK  INTRA_QQQ_ext_summary    68日分
@@ -128,4 +128,4 @@ OK  OPT_QQQ                  2026-10-28 IV30=0.063 Skew90=0.000 PC_Vol=1.21 満�
 OK  HOLD_SMH                 2026-10-29 原本を保存（新規）
 NG  HOLD_SOXX                保有銘柄ファイルを取得できず: RuntimeError('中身が想定と違います（ボット対策の画面などの可能性）')
 NG  QQQ_MEMBERS_PIT          nasdaq-100-ticker-history が未導入（pip install nasdaq-100-ticker-history を追加すると有効）
-OK  GH_EXTRA_TIME            所要 10秒（上限 1500秒）
+OK  GH_EXTRA_TIME            所要 8秒（上限 1500秒）
