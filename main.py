@@ -187,6 +187,126 @@ def calculate_adx_atr(df, period=14):
     return adx, atr
 
 
+
+# ============================================================
+# 2026-10: 日足の検証つき取得（終値NaN対策）
+# ============================================================
+# 症状: スケジュール実行で SMH/QQQ の最新行の Close が NaN のまま保存され、判定が「Close = nan」になる。
+# 方針: ①最新行の Close が有限値か検証 → ②だめなら待って再取得 → ③それでもだめなら Ticker.history() で
+#       最新行だけ補完 → ④それでもだめなら例外で止める（②③の工程に進めない＝誤判定を残さない）。
+#       判定に使わない銘柄は、NaN行を落として警告だけ出す（従来どおり続行）。
+
+CRITICAL_TICKERS = {"SMH", "QQQ"}
+RETRY_WAITS = [20, 40, 60, 90]          # 秒。最大4回の再取得（合計約3.5分）
+PRICE_COLS = ["Open", "High", "Low", "Close", "Adj Close", "Volume"]
+
+
+def _expected_last_us_date():
+    """米国の直近の『引け済み』営業日の目安（祝日は考慮しない。祝日は警告になるだけで止めない）。"""
+    now = pd.Timestamp.now(tz="America/New_York")
+    d = now.normalize().tz_localize(None)
+    if now.hour * 60 + now.minute < 16 * 60 + 30:
+        d = d - pd.Timedelta(days=1)
+    while d.weekday() >= 5:
+        d = d - pd.Timedelta(days=1)
+    return d
+
+
+def _normalize_daily(df):
+    if df is None or df.empty:
+        return None
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+    df.columns = [str(c) for c in df.columns]
+    df = df.sort_index()
+    df = df[~df.index.duplicated(keep="last")]
+    if getattr(df.index, "tz", None) is not None:
+        df.index = df.index.tz_localize(None)
+    return df
+
+
+def _last_close_ok(df):
+    return (
+        df is not None and len(df) > 0 and "Close" in df.columns
+        and bool(np.isfinite(pd.to_numeric(df["Close"], errors="coerce").iloc[-1]))
+    )
+
+
+def _patch_last_rows_from_history(df, ticker):
+    """Ticker.history() で直近の足を取り直し、Close が NaN の行を補う（無い新しい日は追加する）。"""
+    try:
+        h = yf.Ticker(ticker).history(period="10d", interval="1d", auto_adjust=False, actions=False)
+        h = _normalize_daily(h)
+        if h is None:
+            return df
+        h.index = pd.to_datetime(h.index).normalize()
+        h = h.dropna(subset=["Close"])
+        cols = [c for c in PRICE_COLS if c in df.columns and c in h.columns]
+        for dt, row in h.iterrows():
+            nan_row = dt in df.index and not np.isfinite(pd.to_numeric(df.loc[dt, "Close"], errors="coerce"))
+            new_row = dt not in df.index and dt > df.index.max()
+            if nan_row or new_row:
+                df.loc[dt, cols] = row[cols]
+                print(f"  補完: {ticker} {dt:%Y-%m-%d} を Ticker.history() の値にしました（Close={float(row['Close']):.4f}）")
+        return df.sort_index()
+    except Exception as e:
+        print(f"  Ticker.history() での補完に失敗: {e!r}")
+        return df
+
+
+def download_daily_validated(name, ticker, start, critical=False):
+    """日足を取得し、最新行の Close が有限値であることを確認して返す。取れなければ None（critical は例外）。"""
+    expected = _expected_last_us_date()
+    df = None
+    waits = RETRY_WAITS if critical else RETRY_WAITS[:1]     # 判定に使わない銘柄は1回だけ待つ
+
+    for attempt in range(len(waits) + 1):
+        try:
+            df = _normalize_daily(yf.download(
+                ticker, start=start, interval="1d",
+                auto_adjust=False, actions=False, progress=False, threads=False
+            ))
+        except Exception as e:
+            print(f"  {name}: 取得エラー {e!r}")
+            df = None
+
+        ok_close = _last_close_ok(df)
+        ok_date = df is not None and len(df) > 0 and df.index.max().normalize() >= expected
+
+        if ok_close and (ok_date or not critical):
+            return df
+
+        if attempt < len(waits):
+            if df is None or len(df) == 0:
+                why = "データが空"
+            elif not ok_close:
+                why = "最新行のCloseがNaN"
+            else:
+                why = f"最新日が古い（{df.index.max():%Y-%m-%d} < 期待 {expected:%Y-%m-%d}）"
+            print(f"  {name}: {why}。{waits[attempt]}秒待って再取得します（{attempt + 1}/{len(waits)}）")
+            time.sleep(waits[attempt])
+
+    if df is None or len(df) == 0:
+        return None
+
+    if not _last_close_ok(df):
+        df = _patch_last_rows_from_history(df, ticker)
+
+    if not _last_close_ok(df):
+        if critical:
+            raise RuntimeError(
+                f"{name}: 最新行の Close が NaN のまま取得できません（最新日 {df.index.max():%Y-%m-%d}）。"
+                "誤判定を防ぐため、ここで停止します。"
+            )
+        n_before = len(df)
+        df = df.dropna(subset=["Close"])
+        print(f"  警告: {name}: Close が NaN の行 {n_before - len(df)} 件を除外しました。")
+
+    if critical and len(df) > 0 and df.index.max().normalize() < expected:
+        print(f"  警告: {name}: 最新日 {df.index.max():%Y-%m-%d} が期待 {expected:%Y-%m-%d} より古い（祝日なら正常）。")
+
+    return df
+
 # ============================================================
 # データ格納
 # ============================================================
@@ -230,26 +350,8 @@ for name, ticker in TICKERS.items():
     print(f"{name} ({ticker}) のデータを取得中...")
     print("=" * 70)
 
-    # 2026-10: Yahooが一時的に空を返すことがあるため、最大3回まで試す
-    #          （取得できたときの出力は従来と同じ。失敗が続いたときの扱いも従来と同じ）
-    df = None
-
-    for _attempt in range(3):
-
-        df = yf.download(
-            ticker,
-            start=START_DATE,
-            interval="1d",
-            auto_adjust=False,
-            actions=False,
-            progress=False
-        )
-
-        if df is not None and not df.empty:
-            break
-
-        if _attempt < 2:
-            time.sleep(3)
+    # 2026-10: 最新行の Close が NaN でないことを確認しながら取得する（SMH/QQQ は必須。取れなければ停止）
+    df = download_daily_validated(name, ticker, START_DATE, critical=(name in CRITICAL_TICKERS))
 
     if df is None or df.empty:
         print(f"警告: {name} のデータを取得できませんでした。スキップします。")
@@ -742,6 +844,10 @@ def _download_yf(ticker, start=None):
     ]
 
     df = df.sort_index()
+
+    # 2026-10: 末尾の Close が NaN の行は落とす（日付だけ最新に見えて値が空、を防ぐ）
+    if "Close" in df.columns:
+        df = df[pd.to_numeric(df["Close"], errors="coerce").notna() | (df.index < df.index.max())]
 
     return df
 
